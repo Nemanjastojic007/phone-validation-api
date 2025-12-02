@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
     // Get PayPal credentials from environment variables
     const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
     const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
-    const PAYPAL_MODE = process.env.PAYPAL_MODE || 'sandbox';
+    const PAYPAL_MODE = process.env.PAYPAL_MODE || 'live';
     
     const paypalBaseUrl = PAYPAL_MODE === 'live' 
       ? 'https://api-m.paypal.com'
