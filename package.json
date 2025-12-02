@@ -4,7 +4,9 @@
   "description": "A phone validation API built with Node.js",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vercel dev",
+    "start": "vercel dev"
   },
   "keywords": [
     "phone",
