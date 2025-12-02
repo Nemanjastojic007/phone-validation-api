@@ -12,6 +12,17 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET');
   res.setHeader('Content-Type', 'application/json');
 
+
+// ---------- API Key Check ----------
+const MY_API_KEY = process.env.MY_API_KEY; // Vercel environment variable
+const apiKey = req.headers['x-api-key'];
+
+if (!apiKey || apiKey !== MY_API_KEY) {
+  return res.status(403).json({ error: 'Invalid API Key', valid: false });
+}
+// -----------------------------------
+
+
   // Only allow GET requests
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed. Use GET.' });
