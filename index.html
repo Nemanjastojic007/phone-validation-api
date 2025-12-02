@@ -866,8 +866,14 @@ validatePhone('+1234567890');</code>
                         // Show loading message
                         showMessage('✅ Payment successful! Generating your API key...', 'success');
                         
-                        // Call webhook to generate API key
-                        // Use customer info from order creation or extract from PayPal response
+                        // Extract order ID from capture result
+                        const orderId = captureResult.orderId || captureResult.id;
+                        
+                        if (!orderId) {
+                            throw new Error('Order ID not found in payment response');
+                        }
+                        
+                        // Extract customer info
                         const payerEmail = captureResult.payer?.email_address || 
                                          captureResult.purchase_units?.[0]?.payee?.email_address ||
                                          customerInfo.email;
@@ -876,21 +882,8 @@ validatePhone('+1234567890');</code>
                                             `${captureResult.payer.name.given_name || ''} ${captureResult.payer.name.surname || ''}`.trim() : 
                                             'Customer');
                         
-                        // Prepare payment data for webhook
-                        const paymentDataForWebhook = {
-                            ...captureResult,
-                            email: payerEmail,
-                            name: payerName,
-                            purchase_units: captureResult.purchase_units || [{
-                                custom_id: JSON.stringify({
-                                    name: payerName,
-                                    email: payerEmail,
-                                    plan: 'pro'
-                                })
-                            }]
-                        };
-                        
-                        await generateApiKeyFromPayment(paymentDataForWebhook);
+                        // Call webhook to verify payment and generate API key
+                        await generateApiKeyFromPayment(orderId, payerEmail, payerName);
 
                     } catch (error) {
                         console.error('Error capturing payment:', error);
@@ -1004,27 +997,33 @@ validatePhone('+1234567890');</code>
             document.getElementById('paymentSuccess').classList.remove('show');
         }
 
-        async function generateApiKeyFromPayment(paymentData) {
+        async function generateApiKeyFromPayment(orderId, email, name) {
             try {
                 const apiBaseUrl = getApiBaseUrl();
-                // Send payment data directly (webhook will handle the format)
+                
+                // Call webhook with order ID to verify payment and get API key
                 const response = await fetch(`${apiBaseUrl}/api/paypal-webhook`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(paymentData)
+                    body: JSON.stringify({
+                        orderId: orderId,
+                        email: email,
+                        name: name
+                    })
                 });
 
                 const result = await response.json();
                 
-                if (response.ok && result.apiKey) {
-                    // Display API key
-                    document.getElementById('apiKeyValue').textContent = result.apiKey;
+                if (response.ok && result.api_key) {
+                    // Display API key in the hidden div (which becomes visible)
+                    document.getElementById('apiKeyValue').textContent = result.api_key;
                     document.getElementById('keyPlan').textContent = 'Pro';
                     document.getElementById('keyLimit').textContent = '1,000';
                     document.getElementById('keyUsed').textContent = '0';
                     
+                    // Show the API key display (it's hidden by default)
                     const apiKeyDisplay = document.getElementById('apiKeyDisplay');
                     apiKeyDisplay.classList.add('show');
                     apiKeyDisplay.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1032,27 +1031,12 @@ validatePhone('+1234567890');</code>
                     // Remove loading message and show success
                     document.getElementById('message').classList.remove('show');
                     showMessage('✅ Payment successful! Your API key has been generated below.', 'success');
-                } else if (response.ok) {
-                    // Payment processed but API key might already exist
-                    document.getElementById('message').classList.remove('show');
-                    if (result.existing) {
-                        showMessage('✅ Payment successful! Your existing API key is ready below.', 'success');
-                        // Display existing API key if provided
-                        if (result.apiKey) {
-                            document.getElementById('apiKeyValue').textContent = result.apiKey;
-                            document.getElementById('keyPlan').textContent = 'Pro';
-                            document.getElementById('keyLimit').textContent = '1,000';
-                            document.getElementById('apiKeyDisplay').classList.add('show');
-                            document.getElementById('apiKeyDisplay').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                        }
-                    } else {
-                        showMessage('✅ Payment successful! API key generation is processing. Check your email shortly.', 'success');
-                    }
                 } else {
                     throw new Error(result.error || 'Failed to generate API key');
                 }
             } catch (error) {
                 console.error('Error generating API key from payment:', error);
+                showMessage(`Error generating API key: ${error.message}. Please contact support with order ID: ${orderId}`, 'error');
             }
         }
 

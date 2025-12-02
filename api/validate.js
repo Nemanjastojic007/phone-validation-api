@@ -1,4 +1,36 @@
 const { parsePhoneNumber } = require('libphonenumber-js');
+const { getFirestore } = require('../lib/firebase');
+
+/**
+ * Check if API key exists in Firestore
+ */
+async function validateApiKey(apiKey) {
+  try {
+    if (!apiKey) {
+      return { valid: false };
+    }
+
+    const db = getFirestore();
+    const apiKeysRef = db.collection('api_keys');
+    
+    const snapshot = await apiKeysRef
+      .where('key', '==', apiKey)
+      .limit(1)
+      .get();
+
+    if (snapshot.empty) {
+      return { valid: false };
+    }
+
+    return { 
+      valid: true,
+      doc: snapshot.docs[0].data()
+    };
+  } catch (error) {
+    console.error('Error validating API key:', error);
+    return { valid: false, error: error.message };
+  }
+}
 
 /**
  * Vercel serverless function to validate phone numbers
@@ -9,24 +41,42 @@ const { parsePhoneNumber } = require('libphonenumber-js');
 module.exports = async (req, res) => {
   // Set CORS headers for API access
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key');
   res.setHeader('Content-Type', 'application/json');
 
-
-// ---------- API Key Check ----------
-const MY_API_KEY = process.env.MY_API_KEY; // Vercel environment variable
-const apiKey = req.headers['x-api-key'];
-
-if (!apiKey || apiKey !== MY_API_KEY) {
-  return res.status(403).json({ error: 'Invalid API Key', valid: false });
-}
-// -----------------------------------
-
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
 
   // Only allow GET requests
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed. Use GET.' });
   }
+
+  // ---------- API Key Check ----------
+  const apiKey = req.headers['x-api-key'];
+
+  if (!apiKey) {
+    return res.status(401).json({ 
+      error: 'API key is required',
+      message: 'Please provide your API key in the x-api-key header',
+      valid: false 
+    });
+  }
+
+  // Validate API key from Firestore
+  const keyValidation = await validateApiKey(apiKey);
+  
+  if (!keyValidation.valid) {
+    return res.status(401).json({ 
+      error: 'Invalid API Key',
+      message: 'The provided API key is not valid or does not exist',
+      valid: false 
+    });
+  }
+  // -----------------------------------
 
   // Extract phone number and optional country from query parameters
   const { phone, country } = req.query;
@@ -115,4 +165,3 @@ if (!apiKey || apiKey !== MY_API_KEY) {
     });
   }
 };
-

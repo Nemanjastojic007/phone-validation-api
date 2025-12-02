@@ -1,43 +1,6 @@
-const fs = require('fs');
-const path = require('path');
 const crypto = require('crypto');
-
-// Path to storage file (reuse from generate-key)
-const STORAGE_PATH = path.join(process.cwd(), 'data', 'api-keys.json');
-
-/**
- * Ensure the data directory exists
- */
-function ensureDataDirectory() {
-  const dataDir = path.dirname(STORAGE_PATH);
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
-}
-
-/**
- * Read API keys from storage
- */
-function readApiKeys() {
-  ensureDataDirectory();
-  if (!fs.existsSync(STORAGE_PATH)) {
-    return {};
-  }
-  try {
-    const data = fs.readFileSync(STORAGE_PATH, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    return {};
-  }
-}
-
-/**
- * Write API keys to storage
- */
-function writeApiKeys(keys) {
-  ensureDataDirectory();
-  fs.writeFileSync(STORAGE_PATH, JSON.stringify(keys, null, 2), 'utf8');
-}
+const admin = require('firebase-admin');
+const { getFirestore } = require('../lib/firebase');
 
 /**
  * Generate a secure API key
@@ -47,8 +10,128 @@ function generateApiKey() {
 }
 
 /**
+ * Verify PayPal payment using order ID
+ */
+async function verifyPayPalPayment(orderId) {
+  try {
+    const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
+    const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
+    const PAYPAL_MODE = process.env.PAYPAL_MODE || 'sandbox';
+    
+    const paypalBaseUrl = PAYPAL_MODE === 'live' 
+      ? 'https://api-m.paypal.com'
+      : 'https://api-m.sandbox.paypal.com';
+
+    // Get access token
+    const authResponse = await fetch(`${paypalBaseUrl}/v1/oauth2/token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Basic ${Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64')}`
+      },
+      body: 'grant_type=client_credentials'
+    });
+
+    if (!authResponse.ok) {
+      throw new Error('Failed to authenticate with PayPal');
+    }
+
+    const authData = await authResponse.json();
+    const accessToken = authData.access_token;
+
+    // Get order details to verify payment
+    const orderResponse = await fetch(`${paypalBaseUrl}/v2/checkout/orders/${orderId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!orderResponse.ok) {
+      throw new Error('Failed to verify PayPal order');
+    }
+
+    const orderData = await orderResponse.json();
+    
+    // Check if payment is completed
+    if (orderData.status === 'COMPLETED' || orderData.status === 'APPROVED') {
+      return {
+        verified: true,
+        orderData: orderData
+      };
+    }
+
+    return {
+      verified: false,
+      status: orderData.status
+    };
+
+  } catch (error) {
+    console.error('Error verifying PayPal payment:', error);
+    throw error;
+  }
+}
+
+/**
+ * Check if order ID already exists in Firestore
+ */
+async function checkExistingOrder(orderId) {
+  try {
+    const db = getFirestore();
+    const apiKeysRef = db.collection('api_keys');
+    
+    const snapshot = await apiKeysRef
+      .where('order_id', '==', orderId)
+      .limit(1)
+      .get();
+
+    if (snapshot.empty) {
+      return null;
+    }
+
+    const doc = snapshot.docs[0];
+    return {
+      id: doc.id,
+      ...doc.data()
+    };
+  } catch (error) {
+    console.error('Error checking existing order:', error);
+    return null;
+  }
+}
+
+/**
+ * Save API key to Firestore
+ */
+async function saveApiKeyToFirestore(apiKey, orderId) {
+  try {
+    const db = getFirestore();
+    const apiKeysRef = db.collection('api_keys');
+    
+    const timestamp = admin.firestore.Timestamp.now();
+    const data = {
+      key: apiKey,
+      order_id: orderId,
+      paid_at: timestamp,
+      created_at: timestamp
+    };
+
+    const docRef = await apiKeysRef.add(data);
+    
+    return {
+      id: docRef.id,
+      ...data
+    };
+  } catch (error) {
+    console.error('Error saving to Firestore:', error);
+    throw error;
+  }
+}
+
+/**
  * Vercel serverless function to handle PayPal webhook events
- * This endpoint processes successful PayPal payments and generates API keys
+ * Verifies payment and generates API key stored in Firestore
  */
 module.exports = async (req, res) => {
   // Set CORS headers
@@ -68,128 +151,47 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const event = req.body;
-    let email, name, orderId;
+    const { orderId, email, name } = req.body;
 
-    // Handle different payment data formats
-    // Format 1: Direct payment capture data (from frontend)
-    if (event.purchase_units && event.payer) {
-      const purchaseUnit = event.purchase_units[0] || {};
-      const payer = event.payer || {};
-      
-      // Extract custom data
-      let customData = {};
-      if (purchaseUnit.custom_id) {
-        try {
-          customData = typeof purchaseUnit.custom_id === 'string' 
-            ? JSON.parse(purchaseUnit.custom_id) 
-            : purchaseUnit.custom_id;
-        } catch {
-          // Ignore parse errors
-        }
-      }
-      
-      email = customData.email || event.email || payer.email_address || payer.email;
-      name = customData.name || event.name || 
-             `${payer.name?.given_name || ''} ${payer.name?.surname || ''}`.trim() || 
-             'Customer';
-      orderId = event.id || event.orderId;
-    }
-    // Format 2: Webhook event format
-    else if (event.event_type === 'PAYMENT.CAPTURE.COMPLETED' || event.event_type === 'CHECKOUT.ORDER.APPROVED') {
-      const paymentInfo = event.resource || {};
-      const purchaseUnit = paymentInfo.purchase_units?.[0] || {};
-      const payerInfo = paymentInfo.payer || {};
-      
-      let customData = {};
-      if (purchaseUnit.custom_id) {
-        try {
-          customData = typeof purchaseUnit.custom_id === 'string' 
-            ? JSON.parse(purchaseUnit.custom_id) 
-            : purchaseUnit.custom_id;
-        } catch {
-          // Ignore parse errors
-        }
-      }
-      
-      email = customData.email || payerInfo.email_address;
-      name = customData.name || 
-             `${payerInfo.name?.given_name || ''} ${payerInfo.name?.surname || ''}`.trim() || 
-             'Customer';
-      orderId = paymentInfo.id || event.id;
-    }
-    // Format 3: Simple format with email/name directly
-    else if (event.email) {
-      email = event.email;
-      name = event.name || 'Customer';
-      orderId = event.orderId || event.id;
-    }
-
-    if (email) {
-
-      // Read existing keys
-      const apiKeys = readApiKeys();
-
-      // Check if email already exists
-      const existingKey = Object.keys(apiKeys).find(
-        key => apiKeys[key].email.toLowerCase() === email.toLowerCase()
-      );
-
-      if (existingKey) {
-        // Update existing key to Pro plan if needed
-        if (apiKeys[existingKey].plan !== 'pro') {
-          apiKeys[existingKey].plan = 'pro';
-          apiKeys[existingKey].requestsLimit = 1000;
-          apiKeys[existingKey].paymentId = orderId;
-          apiKeys[existingKey].paidAt = new Date().toISOString();
-          writeApiKeys(apiKeys);
-        }
-        
-        return res.status(200).json({
-          success: true,
-          message: 'Payment processed successfully',
-          apiKey: existingKey,
-          existing: true,
-          email
-        });
-      }
-
-      // Generate new API key for Pro plan
-      const apiKey = generateApiKey();
-
-      // Store API key info
-      apiKeys[apiKey] = {
-        name: name || 'Customer',
-        email: email.toLowerCase(),
-        plan: 'pro',
-        requestsLimit: 1000,
-        requestsUsed: 0,
-        createdAt: new Date().toISOString(),
-        paymentId: orderId,
-        paidAt: new Date().toISOString(),
-        active: true
-      };
-
-      // Save to storage
-      writeApiKeys(apiKeys);
-
-      console.log(`API key generated for ${email}: ${apiKey}`);
-
-      // Return success response
-      return res.status(200).json({
-        success: true,
-        message: 'Payment processed and API key generated',
-        apiKey,
-        email
-      });
-    } else {
-      // No email found
-      console.error('No email found in payment data:', event);
+    // Validate required fields
+    if (!orderId) {
       return res.status(400).json({ 
-        error: 'Email not found in payment data',
-        received: Object.keys(event)
+        error: 'Order ID is required',
+        received: Object.keys(req.body)
       });
     }
+
+    // Check if we already processed this order
+    const existingRecord = await checkExistingOrder(orderId);
+    if (existingRecord) {
+      return res.status(200).json({
+        api_key: existingRecord.key
+      });
+    }
+
+    // Verify PayPal payment
+    const verification = await verifyPayPalPayment(orderId);
+    
+    if (!verification.verified) {
+      return res.status(400).json({
+        error: 'Payment not verified',
+        status: verification.status,
+        message: 'Order status is not COMPLETED or APPROVED'
+      });
+    }
+
+    // Generate unique API key
+    const apiKey = generateApiKey();
+
+    // Save to Firestore
+    await saveApiKeyToFirestore(apiKey, orderId);
+
+    console.log(`API key generated and saved for order ${orderId}: ${apiKey}`);
+
+    // Return API key
+    return res.status(200).json({
+      api_key: apiKey
+    });
 
   } catch (error) {
     console.error('Error processing PayPal webhook:', error);
@@ -199,4 +201,3 @@ module.exports = async (req, res) => {
     });
   }
 };
-
