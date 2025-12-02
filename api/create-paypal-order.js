@@ -29,13 +29,30 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { name, email, amount = '10.00' } = req.body;
+    const { name, email, plan = 'standard', amount } = req.body;
 
     if (!name || !email) {
       return res.status(400).json({
         error: 'Name and email are required'
       });
     }
+
+    // Plan configuration
+    const plans = {
+      standard: {
+        price: '9.99',
+        requests: 1000,
+        description: 'Phone Validation API - Standard Plan (1,000 requests/month)'
+      },
+      pro: {
+        price: '49.99',
+        requests: 10000,
+        description: 'Phone Validation API - Pro Plan (10,000 requests/month)'
+      }
+    };
+
+    const selectedPlan = plans[plan] || plans.standard;
+    const finalAmount = amount || selectedPlan.price;
 
     // Get PayPal credentials from environment variables
     const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
@@ -76,10 +93,10 @@ module.exports = async (req, res) => {
         purchase_units: [{
           amount: {
             currency_code: 'USD',
-            value: amount
+            value: finalAmount
           },
-          description: 'Phone Validation API - Pro Plan (1,000 requests/month)',
-          custom_id: JSON.stringify({ name, email, plan: 'pro' })
+          description: selectedPlan.description,
+          custom_id: JSON.stringify({ name, email, plan: plan || 'standard' })
         }],
         application_context: {
           brand_name: 'Phone Validation API',

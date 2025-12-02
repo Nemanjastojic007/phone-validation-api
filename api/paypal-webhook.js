@@ -104,15 +104,33 @@ async function checkExistingOrder(orderId) {
 /**
  * Save API key to Firestore
  */
-async function saveApiKeyToFirestore(apiKey, orderId) {
+async function saveApiKeyToFirestore(apiKey, orderId, plan = 'standard') {
   try {
     const db = getFirestore();
     const apiKeysRef = db.collection('api_keys');
+    
+    // Plan configuration
+    const plans = {
+      standard: {
+        name: 'Standard',
+        requests: 1000
+      },
+      pro: {
+        name: 'Pro',
+        requests: 10000
+      }
+    };
+
+    const selectedPlan = plans[plan] || plans.standard;
     
     const timestamp = admin.firestore.Timestamp.now();
     const data = {
       key: apiKey,
       order_id: orderId,
+      plan: plan,
+      plan_name: selectedPlan.name,
+      requests_limit: selectedPlan.requests,
+      requests_used: 0,
       paid_at: timestamp,
       created_at: timestamp
     };
@@ -151,7 +169,7 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { orderId, email, name } = req.body;
+    const { orderId, email, name, plan } = req.body;
 
     // Validate required fields
     if (!orderId) {
@@ -180,13 +198,27 @@ module.exports = async (req, res) => {
       });
     }
 
+    // Extract plan from PayPal order or use provided plan
+    let finalPlan = plan || 'standard';
+    try {
+      const orderData = verification.orderData;
+      if (orderData?.purchase_units?.[0]?.custom_id) {
+        const customData = JSON.parse(orderData.purchase_units[0].custom_id);
+        if (customData.plan) {
+          finalPlan = customData.plan;
+        }
+      }
+    } catch (e) {
+      console.log('Could not extract plan from PayPal order, using provided/default plan');
+    }
+
     // Generate unique API key
     const apiKey = generateApiKey();
 
     // Save to Firestore
-    await saveApiKeyToFirestore(apiKey, orderId);
+    await saveApiKeyToFirestore(apiKey, orderId, finalPlan);
 
-    console.log(`API key generated and saved for order ${orderId}: ${apiKey}`);
+    console.log(`API key generated and saved for order ${orderId} (plan: ${finalPlan}): ${apiKey}`);
 
     // Return API key
     return res.status(200).json({
