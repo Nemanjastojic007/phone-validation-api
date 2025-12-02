@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phone Validation API - Validate Phone Numbers Instantly</title>
     <!-- PayPal SDK -->
-    <script src="https://www.paypal.com/sdk/js?client-id=AW3JRtbEuYVYkXdGpoTckLHYPEIOAuaGRjSfCFkTh6vg5bBtbvEMOHCuLjpGaNyIJ-L2UqpwaJnFFjwH&currency=USD"></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=AW3JRtbEuYVYkXdGpoTckLHYPEIOAuaGRjSfCFkTh6vg5bBtbvEMOHCuLjpGaNyIJ-L2UqpwaJnFFjwH&currency=USD&intent=capture"></script>
     <style>
         * {
             margin: 0;
@@ -582,70 +582,42 @@ Headers:
             </div>
         </section>
 
-        <!-- Pricing -->
-        <section class="section">
-            <h2>Simple, Transparent Pricing</h2>
-            <p>Choose the plan that fits your needs. Start free or upgrade for more requests.</p>
-            <div class="pricing-grid">
-                <div class="pricing-card">
-                    <h3>Free</h3>
-                    <div class="price">$0<span class="period">/month</span></div>
-                    <ul class="pricing-features">
-                        <li>100 requests/month</li>
-                        <li>Phone validation</li>
-                        <li>Country detection</li>
-                        <li>Number formatting</li>
-                        <li>Basic support</li>
-                    </ul>
-                    <button class="btn btn-secondary" onclick="scrollToSignup()">Get Started</button>
-                </div>
-                <div class="pricing-card featured">
-                    <h3>Pro</h3>
-                    <div class="price">$10<span class="period">/month</span></div>
-                    <ul class="pricing-features">
-                        <li>1,000 requests/month</li>
-                        <li>All Free features</li>
-                        <li>Priority support</li>
-                        <li>Usage analytics</li>
-                        <li>Email notifications</li>
-                    </ul>
-                    <div id="paypal-button-container"></div>
-                    <button class="btn btn-secondary" onclick="scrollToSignup()" style="margin-top: 16px;">Or Sign Up Free</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Signup Form -->
-        <section class="section" id="signup">
+        <!-- Payment Section -->
+        <section class="section" id="payment">
             <h2>Get Your API Key</h2>
-            <p>Sign up to receive your API key and start validating phone numbers right away. Choose your plan and get instant access.</p>
+            <p>Purchase API access for $10/month and receive 1,000 requests. Complete payment to get your API key instantly.</p>
             
             <div id="message" class="message"></div>
             
             <div class="signup-container">
                 <div class="signup-form-wrapper">
-                    <form id="signupForm" onsubmit="handleSignup(event)">
+                    <div class="pricing-card featured" style="max-width: 500px; margin: 0 auto;">
+                        <h3>API Access</h3>
+                        <div class="price">$10<span class="period">/month</span></div>
+                        <ul class="pricing-features">
+                            <li>1,000 requests/month</li>
+                            <li>Phone validation</li>
+                            <li>Country detection</li>
+                            <li>Number formatting</li>
+                            <li>Priority support</li>
+                        </ul>
+                    </div>
+                    
+                    <form id="paymentForm" onsubmit="handlePaymentForm(event)" style="margin-top: 32px;">
                         <div class="form-group">
-                            <label for="name">Full Name *</label>
-                            <input type="text" id="name" name="name" required placeholder="John Doe">
+                            <label for="paypal-name">Full Name *</label>
+                            <input type="text" id="paypal-name" name="name" required placeholder="John Doe">
                         </div>
                         <div class="form-group">
-                            <label for="email">Email Address *</label>
-                            <input type="email" id="email" name="email" required placeholder="john@example.com">
+                            <label for="paypal-email">Email Address *</label>
+                            <input type="email" id="paypal-email" name="email" required placeholder="john@example.com">
                         </div>
-                        <div class="form-group">
-                            <label for="plan">Choose Plan *</label>
-                            <select id="plan" name="plan" required>
-                                <option value="">Select a plan...</option>
-                                <option value="free">Free - 100 requests/month</option>
-                                <option value="pro">Pro - 1,000 requests/month ($10/month)</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn" id="submitBtn">
-                            <span id="btnText">Generate API Key</span>
-                            <span id="btnLoader" class="loading" style="display: none;"></span>
+                        <button type="submit" class="btn" id="showPayPalBtn">
+                            Continue to Payment
                         </button>
                     </form>
+                    
+                    <div id="paypal-button-container" style="display: none; margin-top: 24px;"></div>
                 </div>
 
                 <div class="api-key-display" id="apiKeyDisplay">
@@ -803,33 +775,46 @@ validatePhone('+1234567890');</code>
             email: ''
         };
 
-        // Initialize PayPal Button
-        if (typeof paypal !== 'undefined') {
-            paypal.Buttons({
-                style: {
-                    layout: 'vertical',
-                    color: 'blue',
-                    shape: 'rect',
-                    label: 'paypal'
-                },
+        // PayPal button instance
+        let paypalButtons = null;
+        let paypalButtonInitialized = false;
+        
+        // Initialize PayPal Button (only when needed)
+        function initPayPalButton() {
+            if (paypalButtonInitialized) return; // Already initialized
+            
+            if (typeof paypal === 'undefined') {
+                console.error('PayPal SDK not loaded');
+                showMessage('PayPal SDK is still loading. Please wait a moment and try again.', 'error');
+                return false;
+            }
+            
+            const container = document.getElementById('paypal-button-container');
+            if (!container) {
+                console.error('PayPal container not found');
+                return false;
+            }
+            
+            // Clear container first
+            container.innerHTML = '';
+            
+            try {
+                paypalButtons = paypal.Buttons({
+                    style: {
+                        layout: 'vertical',
+                        color: 'blue',
+                        shape: 'rect',
+                        label: 'paypal'
+                    },
                 createOrder: async function(data, actions) {
-                    // Get customer info - try form first, then prompt
-                    let name = document.getElementById('paypal-name')?.value || customerInfo.name || '';
-                    let email = document.getElementById('paypal-email')?.value || customerInfo.email || '';
+                    // Use customer info from form
+                    const name = customerInfo.name || document.getElementById('paypal-name')?.value || '';
+                    const email = customerInfo.email || document.getElementById('paypal-email')?.value || '';
                     
-                    // If not in form, show prompts
-                    if (!name || !email) {
-                        name = prompt('Enter your full name:') || 'Customer';
-                        email = prompt('Enter your email:') || '';
-                    }
-                    
-                    if (!email) {
-                        alert('Email is required for API key generation');
+                    if (!email || !name) {
+                        alert('Please fill in your name and email in the form above before proceeding with payment.');
                         return;
                     }
-
-                    // Store for later use
-                    customerInfo = { name, email };
 
                     try {
                         const apiBaseUrl = getApiBaseUrl();
@@ -916,15 +901,79 @@ validatePhone('+1234567890');</code>
                     console.error('PayPal error:', err);
                     showMessage('Payment error. Please try again.', 'error');
                 }
-            }).render('#paypal-button-container');
-        } else {
-            // Show placeholder if PayPal is not configured
-            document.getElementById('paypal-button-container').innerHTML = 
-                '<p style="color: var(--text-secondary); font-size: 0.9rem;">PayPal integration - Configure your PayPal Client ID to enable</p>';
+                });
+                
+                paypalButtons.render('#paypal-button-container').then(() => {
+                    paypalButtonInitialized = true;
+                    console.log('PayPal button rendered successfully');
+                }).catch(err => {
+                    console.error('PayPal button render error:', err);
+                    container.innerHTML = '<p style="color: var(--error-color); padding: 16px;">PayPal button failed to load. Please refresh the page and try again.</p>';
+                });
+                
+                return true;
+            } catch (error) {
+                console.error('Error creating PayPal button:', error);
+                container.innerHTML = '<p style="color: var(--error-color); padding: 16px;">Error initializing PayPal. Please refresh the page.</p>';
+                return false;
+            }
         }
 
-        function scrollToSignup() {
-            document.getElementById('signup').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        function scrollToPayment() {
+            document.getElementById('payment').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        function handlePaymentForm(event) {
+            event.preventDefault();
+            const name = document.getElementById('paypal-name').value.trim();
+            const email = document.getElementById('paypal-email').value.trim();
+            
+            if (!name || !email) {
+                showMessage('Please fill in all required fields.', 'error');
+                return;
+            }
+            
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showMessage('Please enter a valid email address.', 'error');
+                return;
+            }
+            
+            // Store customer info
+            customerInfo = { name, email };
+            
+            // Show PayPal button container
+            const container = document.getElementById('paypal-button-container');
+            container.style.display = 'block';
+            
+            // Check if PayPal SDK is loaded
+            if (typeof paypal === 'undefined') {
+                container.innerHTML = '<p style="color: var(--error-color); padding: 16px;">PayPal SDK is loading. Please wait...</p>';
+                // Wait for SDK to load
+                setTimeout(function() {
+                    if (typeof paypal !== 'undefined') {
+                        initPayPalButton();
+                    } else {
+                        container.innerHTML = '<p style="color: var(--error-color); padding: 16px;">PayPal SDK failed to load. Please refresh the page.</p>';
+                    }
+                }, 2000);
+                return;
+            }
+            
+            // Initialize PayPal button
+            if (!paypalButtonInitialized) {
+                const success = initPayPalButton();
+                if (!success) {
+                    showMessage('Failed to initialize PayPal. Please refresh the page and try again.', 'error');
+                    return;
+                }
+            }
+            
+            // Scroll to PayPal button
+            setTimeout(() => {
+                container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 300);
         }
 
         function scrollToExamples() {
@@ -1025,65 +1074,6 @@ validatePhone('+1234567890');</code>
             });
         }
 
-        async function handleSignup(event) {
-            event.preventDefault();
-            
-            const submitBtn = document.getElementById('submitBtn');
-            const btnText = document.getElementById('btnText');
-            const btnLoader = document.getElementById('btnLoader');
-            const form = document.getElementById('signupForm');
-            
-            submitBtn.disabled = true;
-            btnText.style.display = 'none';
-            btnLoader.style.display = 'inline-block';
-            
-            const formData = {
-                name: document.getElementById('name').value,
-                email: document.getElementById('email').value,
-                plan: document.getElementById('plan').value
-            };
-
-            try {
-                const apiBaseUrl = getApiBaseUrl();
-                const response = await fetch(`${apiBaseUrl}/api/generate-key`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'Failed to generate API key');
-                }
-
-                document.getElementById('message').classList.remove('show');
-                
-                document.getElementById('apiKeyValue').textContent = data.apiKey;
-                document.getElementById('keyPlan').textContent = data.plan.charAt(0).toUpperCase() + data.plan.slice(1);
-                document.getElementById('keyLimit').textContent = data.requestsLimit.toLocaleString();
-                document.getElementById('keyUsed').textContent = (data.requestsUsed || 0).toLocaleString();
-                
-                const apiKeyDisplay = document.getElementById('apiKeyDisplay');
-                apiKeyDisplay.classList.add('show');
-                apiKeyDisplay.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                
-                form.reset();
-                
-            } catch (error) {
-                console.error('Error generating API key:', error);
-                showMessage(
-                    error.message || 'Failed to generate API key. Please try again later.',
-                    'error'
-                );
-            } finally {
-                submitBtn.disabled = false;
-                btnText.style.display = 'inline';
-                btnLoader.style.display = 'none';
-            }
-        }
 
         // Check for payment success in URL
         window.addEventListener('DOMContentLoaded', function() {
