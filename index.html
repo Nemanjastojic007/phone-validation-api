@@ -88,24 +88,6 @@
             font-weight: 400;
         }
 
-        header .cta-button {
-            display: inline-block;
-            background: white;
-            color: var(--primary-color);
-            padding: 18px 48px;
-            border-radius: 12px;
-            font-size: 1.125rem;
-            font-weight: 700;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            margin-top: 8px;
-        }
-
-        header .cta-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-        }
 
         header .trust-signals {
             margin-top: 24px;
@@ -279,10 +261,14 @@
             background: var(--bg-white);
             border: 2px solid var(--border-color);
             border-radius: 20px;
-            padding: 48px;
+            padding: 32px 28px;
             position: relative;
             transition: all 0.3s ease;
             cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 420px;
         }
 
         .payment-card:hover {
@@ -339,26 +325,32 @@
         }
 
         .payment-card h3 {
-            font-size: 1.75rem;
-            margin-bottom: 16px;
-            margin-top: 12px;
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+            margin-top: 8px;
             color: var(--text-primary);
         }
 
         .price-large {
-            font-size: 3.5rem;
+            font-size: 2.75rem;
             font-weight: 800;
             color: var(--primary-color);
-            margin: 32px 0;
+            margin: 20px 0;
             line-height: 1;
             display: flex;
             align-items: baseline;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .price-large .currency {
-            font-size: 2rem;
+            font-size: 1.75rem;
+        }
+
+        .payment-card .btn {
+            margin-top: auto;
+            padding: 14px 24px;
+            font-size: 0.9375rem;
         }
 
         .price-large .period {
@@ -370,17 +362,15 @@
 
         .payment-features {
             list-style: none;
-            margin: 40px 0;
+            margin: 24px 0;
             text-align: left;
-            max-width: 400px;
-            margin-left: auto;
-            margin-right: auto;
+            flex: 1;
         }
 
         .payment-features li {
-            padding: 12px 0;
+            padding: 8px 0;
             color: var(--text-secondary);
-            font-size: 1rem;
+            font-size: 0.9375rem;
             display: flex;
             align-items: center;
         }
@@ -778,10 +768,6 @@
                 font-size: 1.125rem;
             }
 
-            header .cta-button {
-                padding: 16px 36px;
-                font-size: 1rem;
-            }
 
             .benefits-list li {
                 padding: 20px;
@@ -800,11 +786,12 @@
             }
 
             .payment-card {
-                padding: 40px 32px;
+                padding: 28px 24px;
+                min-height: auto;
             }
 
             .price-large {
-                font-size: 3rem;
+                font-size: 2.25rem;
             }
         }
 
@@ -844,7 +831,6 @@
         <div class="container">
             <h1>Validate any phone number worldwide instantly</h1>
             <p class="subheadline">Prevent invalid signups, clean your leads, and get accurate phone data in seconds</p>
-            <a href="#pricing" class="cta-button" onclick="event.preventDefault(); document.getElementById('pricing').scrollIntoView({behavior: 'smooth', block: 'start'});">Start Free Trial</a>
             <p class="trust-signals">Secure payments. No credit card stored. Tested in sandbox & live.</p>
         </div>
     </header>
