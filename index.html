@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phone Validation API - Validate Phone Numbers Instantly</title>
-    <!-- PayPal SDK -->
-    <script src="https://www.paypal.com/sdk/js?client-id=AW3JRtbEuYVYkXdGpoTckLHYPEIOAuaGRjSfCFkTh6vg5bBtbvEMOHCuLjpGaNyIJ-L2UqpwaJnFFjwH&currency=USD&intent=capture"></script>
+    <!-- PayPal SDK - LIVE MODE -->
+    <!-- IMPORTANT: Replace YOUR_LIVE_CLIENT_ID with your actual LIVE PayPal Client ID from PayPal Developer Dashboard -->
+    <!-- Get it at: https://developer.paypal.com/dashboard/applications/sandbox (switch to LIVE mode) -->
+    <script src="https://www.paypal.com/sdk/js?client-id=AX8u8Hg9L0NCsjwPvyqhBugFwYJYZ79rKQ3Pm_vuxTr_3pAEkEBwyM_jCHvjAAQsg4FDabw6QxF4Ru8t&currency=USD&intent=capture"></script>
     <style>
         * {
             margin: 0;
@@ -1121,8 +1123,10 @@ validatePhone('+1234567890');</code>
             return window.location.origin;
         }
 
-        // PayPal Configuration
-        const PAYPAL_CLIENT_ID = 'AW3JRtbEuYVYkXdGpoTckLHYPEIOAuaGRjSfCFkTh6vg5bBtbvEMOHCuLjpGaNyIJ-L2UqpwaJnFFjwH';
+        // PayPal Configuration - LIVE MODE
+        // IMPORTANT: Replace with your LIVE PayPal Client ID (not sandbox)
+        // Get it from: https://developer.paypal.com/dashboard/applications/sandbox (switch to LIVE mode)
+        const PAYPAL_CLIENT_ID = 'AX8u8Hg9L0NCsjwPvyqhBugFwYJYZ79rKQ3Pm_vuxTr_3pAEkEBwyM_jCHvjAAQsg4FDabw6QxF4Ru8t';
 
         // Store customer info for PayPal payment
         let customerInfo = {
