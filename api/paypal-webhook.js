@@ -1,6 +1,34 @@
 const crypto = require('crypto');
 const admin = require('firebase-admin');
 const { getFirestore } = require('../lib/firebase');
+const { sendWelcomeEmail } = require('../lib/email');
+
+/**
+ * Plan configuration - shared across functions
+ * Supports all plans including free, starter, pro, custom, and standard
+ */
+const PLAN_CONFIG = {
+  free: {
+    name: 'Free',
+    requests: 7
+  },
+  starter: {
+    name: 'Starter',
+    requests: 250
+  },
+  pro: {
+    name: 'Pro',
+    requests: 2500
+  },
+  custom: {
+    name: 'Custom',
+    requests: 5000
+  },
+  standard: {
+    name: 'Standard',
+    requests: 1000
+  }
+};
 
 /**
  * Generate a secure API key
@@ -109,19 +137,7 @@ async function saveApiKeyToFirestore(apiKey, orderId, plan = 'standard') {
     const db = getFirestore();
     const apiKeysRef = db.collection('api_keys');
     
-    // Plan configuration
-    const plans = {
-      standard: {
-        name: 'Standard',
-        requests: 1000
-      },
-      pro: {
-        name: 'Pro',
-        requests: 10000
-      }
-    };
-
-    const selectedPlan = plans[plan] || plans.standard;
+    const selectedPlan = PLAN_CONFIG[plan] || PLAN_CONFIG.standard;
     
     const timestamp = admin.firestore.Timestamp.now();
     const data = {
@@ -212,15 +228,62 @@ module.exports = async (req, res) => {
       console.log('Could not extract plan from PayPal order, using provided/default plan');
     }
 
+    // Extract email from PayPal order details or use provided email
+    // Email is extracted from PayPal order data (payer.email_address) as the primary source
+    // Falls back to email from request body if not available in PayPal order
+    let payerEmail = email;
+    try {
+      const orderData = verification.orderData;
+      // Try to get email from PayPal order payer information
+      if (orderData?.payer?.email_address) {
+        payerEmail = orderData.payer.email_address;
+      } else if (orderData?.purchase_units?.[0]?.payee?.email_address) {
+        payerEmail = orderData.purchase_units[0].payee.email_address;
+      }
+    } catch (e) {
+      console.log('Could not extract email from PayPal order, using provided email');
+    }
+
+    // Validate email is available
+    if (!payerEmail) {
+      console.warn(`Warning: No email found for order ${orderId}. Email will not be sent.`);
+    }
+
     // Generate unique API key
     const apiKey = generateApiKey();
 
     // Save to Firestore
-    await saveApiKeyToFirestore(apiKey, orderId, finalPlan);
+    const savedData = await saveApiKeyToFirestore(apiKey, orderId, finalPlan);
 
     console.log(`API key generated and saved for order ${orderId} (plan: ${finalPlan}): ${apiKey}`);
 
-    // Return API key
+    // Send welcome email to user after successful API key generation
+    // Email is sent to the payer's email address extracted from PayPal order or request body
+    // This happens for all plans including free, starter, pro, and custom
+    // If email sending fails, we log the error but don't break the payment flow
+    if (payerEmail) {
+      try {
+        const planConfig = PLAN_CONFIG[finalPlan] || PLAN_CONFIG.standard;
+        await sendWelcomeEmail(
+          payerEmail,           // Email address from PayPal order or request body
+          apiKey,               // Generated API key
+          planConfig.name,      // Plan name (e.g., "Free", "Starter", "Pro")
+          planConfig.requests,  // Monthly request limit
+          name || null          // User's name if provided
+        );
+        console.log(`Welcome email sent successfully to ${payerEmail} for order ${orderId}`);
+      } catch (emailError) {
+        // Email sending failure should NOT break the payment flow
+        // Log the error but continue to return the API key
+        console.error(`Failed to send welcome email to ${payerEmail} for order ${orderId}:`, emailError);
+        console.error('Email error details:', emailError.message);
+        // Continue execution - API key is still returned to the user
+      }
+    } else {
+      console.warn(`Skipping email send for order ${orderId} - no email address available`);
+    }
+
+    // Return API key (always return even if email sending failed)
     return res.status(200).json({
       api_key: apiKey
     });
