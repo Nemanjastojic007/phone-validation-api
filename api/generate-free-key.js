@@ -145,33 +145,47 @@ module.exports = async (req, res) => {
     // If email sending fails, we log the error but don't break the flow
     let emailSent = false;
     let emailErrorMsg = null;
+    
+    console.log('=== EMAIL SENDING DEBUG ===');
+    console.log('Email address:', email);
+    console.log('RESEND_KEY exists:', !!process.env.RESEND_KEY);
+    console.log('RESEND_KEY length:', process.env.RESEND_KEY ? process.env.RESEND_KEY.length : 0);
+    console.log('RESEND_FROM_EMAIL:', process.env.RESEND_FROM_EMAIL || 'not set (will use default)');
+    
     try {
       // Check if RESEND_KEY is configured
       if (!process.env.RESEND_KEY) {
         emailErrorMsg = 'RESEND_KEY environment variable is not set. Please configure it in Vercel to enable email sending.';
-        console.error(emailErrorMsg);
+        console.error('❌ EMAIL ERROR:', emailErrorMsg);
       } else {
-        await sendWelcomeEmail(
+        console.log('✅ RESEND_KEY found, attempting to send email...');
+        const emailResult = await sendWelcomeEmail(
           email,                      // User's email address
           apiKey,                     // Generated API key
           FREE_PLAN_CONFIG.name,      // Plan name ("Free")
           FREE_PLAN_CONFIG.requests, // Monthly request limit (7)
           null                        // No name for free plan
         );
+        console.log('✅ Email send result:', JSON.stringify(emailResult, null, 2));
         emailSent = true;
+        console.log('✅ Email sent successfully!');
       }
     } catch (emailError) {
       // Email sending failure should NOT break the flow
       // Log the error but continue to return the API key
       emailErrorMsg = emailError.message || emailError.toString() || 'Unknown error';
-      console.error(`Failed to send welcome email to ${email} for free plan:`, emailError);
-      console.error('Email error details:', emailErrorMsg);
-      console.error('Full error object:', JSON.stringify(emailError, Object.getOwnPropertyNames(emailError)));
+      console.error('❌ EMAIL SENDING FAILED');
+      console.error('Error type:', emailError.constructor.name);
+      console.error('Error message:', emailErrorMsg);
+      console.error('Error stack:', emailError.stack);
+      console.error('Full error:', JSON.stringify(emailError, Object.getOwnPropertyNames(emailError), 2));
+      
       if (emailErrorMsg.includes('RESEND_KEY') || emailErrorMsg.includes('environment variable')) {
         emailErrorMsg = 'RESEND_KEY environment variable is missing. Please configure it in Vercel.';
       }
       // Continue execution - API key is still returned to the user
     }
+    console.log('=== END EMAIL DEBUG ===');
 
     // Return API key (always return even if email sending failed)
     const response = {
