@@ -981,6 +981,85 @@
             line-height: 1.6;
         }
 
+        .demo-success {
+            margin-top: 24px;
+            padding: 16px 20px;
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid var(--success-color);
+            border-radius: 12px;
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+
+        /* Feature Cards */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: var(--bg-white);
+            padding: 40px 32px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+
+        /* Test Mode Badge */
+        .test-mode-badge {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .feature-card {
+                padding: 32px 24px;
+            }
+
+            .sms-hero-section {
+                padding: 60px 32px !important;
+            }
+
+            .sms-hero-section h2 {
+                font-size: 2rem !important;
+            }
+        }
+
         @media (max-width: 768px) {
             .demo-card {
                 padding: 32px;
@@ -1283,7 +1362,7 @@
                     <button class="btn btn-secondary" style="margin-top: 24px;" onclick="event.stopPropagation(); window.location.href='mailto:nemanja.stojic007@gmail.com?subject=Custom Plan Inquiry';">Contact Sales</button>
                 </div>
             </div>
-
+            
             <!-- API Key Display Modal -->
             <div class="api-key-overlay" id="apiKeyOverlay" onclick="closeApiKeyModal()"></div>
             <div class="api-key-display" id="apiKeyDisplay" style="display: none;">
@@ -1463,6 +1542,202 @@ validatePhone('+1234567890')
     // Handle error
   });</code>
                 </div>
+            </div>
+        </section>
+
+        <!-- SMS Verification API Hero Section -->
+        <section class="section sms-hero-section" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%); border: none; padding: 80px 56px;">
+            <div style="text-align: center; max-width: 800px; margin: 0 auto;">
+                <div style="font-size: 3rem; margin-bottom: 24px;">📱</div>
+                <h2 style="font-size: 3rem; margin-bottom: 24px; font-weight: 800; letter-spacing: -1px; line-height: 1.1;">SMS Verification API</h2>
+                <p class="subheadline" style="font-size: 1.375rem; color: var(--text-secondary); margin-bottom: 40px; line-height: 1.7;">Fast, secure, and developer-friendly phone number verification. Send 6-digit codes via SMS and verify them instantly.</p>
+                <button class="btn btn-hero" onclick="document.getElementById('sms-demo').scrollIntoView({behavior: 'smooth'});">Get Started</button>
+            </div>
+        </section>
+
+        <!-- SMS Verification Features -->
+        <section class="section">
+            <h2 style="text-align: center; margin-bottom: 48px;">Why Choose Our SMS Verification?</h2>
+            <div class="features-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; max-width: 1000px; margin: 0 auto;">
+                <div class="feature-card">
+                    <div class="feature-icon">📨</div>
+                    <h3>Send SMS Codes</h3>
+                    <p>Send 6-digit verification codes to any phone number worldwide. Powered by Twilio Verify for reliable delivery.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">✓</div>
+                    <h3>Verify Instantly</h3>
+                    <p>Verify phone numbers instantly with a simple API call. Get real-time verification results in milliseconds.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔌</div>
+                    <h3>Simple REST API</h3>
+                    <p>Easy integration with any language or framework. Clean JSON responses and comprehensive error handling.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SMS Verification Demo -->
+        <section class="section" id="sms-demo">
+            <h2>Try It Live</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 32px;">Test our SMS verification API right here. <strong>Note:</strong> This demo requires an API key. <a href="#pricing" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">Get your free API key</a> to test with real SMS.</p>
+            
+            <div class="test-mode-badge" id="testModeBadge" style="display: none;">
+                <span style="background: #fef3c7; color: #92400e; padding: 8px 16px; border-radius: 20px; font-size: 0.875rem; font-weight: 600; display: inline-block; margin-bottom: 24px;">
+                    🧪 Test Mode: No real SMS is sent
+                </span>
+            </div>
+
+            <div class="demo-container">
+                <div class="demo-card" style="max-width: 600px; margin: 0 auto;">
+                    <!-- Step 1: Send Code -->
+                    <div id="sms-send-step">
+                        <h3 style="margin-bottom: 20px; font-size: 1.25rem;">Step 1: Send Verification Code</h3>
+                        <div class="demo-input-group">
+                            <label for="sms-phone-input">Phone Number</label>
+                            <div class="demo-input-wrapper">
+                                <input 
+                                    type="text" 
+                                    id="sms-phone-input" 
+                                    placeholder="+1234567890"
+                                    class="demo-input"
+                                />
+                                <button class="btn demo-btn" id="sms-send-btn" onclick="handleSendSmsCode()">
+                                    Send Code
+                                </button>
+                            </div>
+                            <p class="demo-hint">Enter phone number in E.164 format (e.g., +1234567890)</p>
+                        </div>
+                        
+                        <div class="demo-loading" id="sms-send-loading" style="display: none;">
+                            <div class="loading"></div>
+                            <span>Sending verification code...</span>
+                        </div>
+                        
+                        <div class="demo-error" id="sms-send-error" style="display: none;"></div>
+                        <div class="demo-success" id="sms-send-success" style="display: none;"></div>
+                    </div>
+
+                    <!-- Step 2: Verify Code -->
+                    <div id="sms-verify-step" style="display: none; margin-top: 32px; padding-top: 32px; border-top: 2px solid var(--border-color);">
+                        <h3 style="margin-bottom: 20px; font-size: 1.25rem;">Step 2: Verify Code</h3>
+                        <div class="demo-input-group">
+                            <label for="sms-code-input">Verification Code</label>
+                            <div class="demo-input-wrapper">
+                                <input 
+                                    type="text" 
+                                    id="sms-code-input" 
+                                    placeholder="123456"
+                                    class="demo-input"
+                                    maxlength="6"
+                                    pattern="[0-9]{6}"
+                                />
+                                <button class="btn demo-btn" id="sms-verify-btn" onclick="handleVerifySmsCode()">
+                                    Verify
+                                </button>
+                            </div>
+                            <p class="demo-hint">Enter the 6-digit code sent to your phone</p>
+                        </div>
+                        
+                        <div class="demo-loading" id="sms-verify-loading" style="display: none;">
+                            <div class="loading"></div>
+                            <span>Verifying code...</span>
+                        </div>
+                        
+                        <div class="demo-error" id="sms-verify-error" style="display: none;"></div>
+                        <div class="demo-success" id="sms-verify-success" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SMS Verification API Documentation -->
+        <section class="section">
+            <h2>API Documentation</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 32px;">Simple REST API endpoints for sending and verifying SMS codes.</p>
+
+            <h3>Send Verification Code</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 20px;">Send a 6-digit verification code to any phone number via SMS.</p>
+            <div class="integration-example">
+                <div class="code-label">POST /api/send-code</div>
+                <div class="code-block">
+                    <code>const axios = require('axios');
+
+async function sendVerificationCode(phoneNumber) {
+  try {
+    const response = await axios.post(
+      'https://phone-validation-api.vercel.app/api/send-code',
+      { phone: phoneNumber },
+      {
+        headers: {
+          'x-api-key': 'YOUR_API_KEY',
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Failed to send code');
+  }
+}</code>
+                </div>
+            </div>
+
+            <h3>Verify Code</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 20px;">Verify the 6-digit code sent to the phone number.</p>
+            <div class="integration-example">
+                <div class="code-label">POST /api/check-code</div>
+                <div class="code-block">
+                    <code>const axios = require('axios');
+
+async function verifyCode(phoneNumber, code) {
+  try {
+    const response = await axios.post(
+      'https://phone-validation-api.vercel.app/api/check-code',
+      { phone: phoneNumber, code: code },
+      {
+        headers: {
+          'x-api-key': 'YOUR_API_KEY',
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Verification failed');
+  }
+}</code>
+                </div>
+            </div>
+
+            <h3>cURL Examples</h3>
+            <div class="integration-example">
+                <div class="code-label">Send Code</div>
+                <div class="code-block">
+                    <code>curl -X POST "https://phone-validation-api.vercel.app/api/send-code" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"phone": "+1234567890"}'</code>
+                </div>
+            </div>
+
+            <div class="integration-example">
+                <div class="code-label">Verify Code</div>
+                <div class="code-block">
+                    <code>curl -X POST "https://phone-validation-api.vercel.app/api/check-code" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"phone": "+1234567890", "code": "123456"}'</code>
+                </div>
+            </div>
+
+            <div class="info-box" style="margin-top: 32px; padding: 20px; background: #f0f9ff; border-left: 4px solid var(--primary-color); border-radius: 8px;">
+                <strong>Rate Limits:</strong>
+                <ul style="margin-top: 12px; margin-left: 20px; color: var(--text-secondary);">
+                    <li>Maximum 3 SMS requests per phone number per hour</li>
+                    <li>Maximum 10 SMS requests per API key per hour</li>
+                    <li>Rate limit exceeded returns HTTP 429 status</li>
+                </ul>
             </div>
         </section>
     </main>
@@ -1756,7 +2031,7 @@ validatePhone('+1234567890')
                         if (!captureResponse.ok) {
                             throw new Error(captureResult.error || 'Payment capture failed');
                         }
-
+                        
                         const orderId = captureResult.orderId || captureResult.id;
                         
                         if (!orderId) {
@@ -2009,6 +2284,176 @@ validatePhone('+1234567890')
                     if (e.key === 'Enter') {
                         handleTestValidation();
                     }
+                });
+            }
+        });
+
+        // SMS Verification Demo Functions
+        let smsTestMode = false;
+        let smsPhoneNumber = '';
+
+        // Check if we're in test mode (no API key means test mode)
+        function checkSmsTestMode() {
+            const apiBaseUrl = getApiBaseUrl();
+            const hostname = window.location.hostname;
+            // Show test mode badge if on localhost or if no API key is available
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                smsTestMode = true;
+                document.getElementById('testModeBadge').style.display = 'block';
+            }
+        }
+
+        // Handle sending SMS code
+        async function handleSendSmsCode() {
+            const phoneInput = document.getElementById('sms-phone-input');
+            const sendBtn = document.getElementById('sms-send-btn');
+            const loading = document.getElementById('sms-send-loading');
+            const error = document.getElementById('sms-send-error');
+            const success = document.getElementById('sms-send-success');
+            const verifyStep = document.getElementById('sms-verify-step');
+            
+            const phone = phoneInput.value.trim();
+            
+            // Reset UI
+            error.style.display = 'none';
+            success.style.display = 'none';
+            sendBtn.disabled = true;
+            
+            if (!phone) {
+                error.textContent = 'Please enter a phone number.';
+                error.style.display = 'block';
+                sendBtn.disabled = false;
+                return;
+            }
+            
+            // Validate phone format (basic check)
+            if (!phone.startsWith('+')) {
+                error.textContent = 'Phone number must be in E.164 format (e.g., +1234567890)';
+                error.style.display = 'block';
+                sendBtn.disabled = false;
+                return;
+            }
+            
+            loading.style.display = 'flex';
+            
+            try {
+                const apiBaseUrl = getApiBaseUrl();
+                
+                // In test mode, simulate success
+                if (smsTestMode) {
+                    setTimeout(() => {
+                        loading.style.display = 'none';
+                        smsPhoneNumber = phone;
+                        success.textContent = '✅ Test mode: Code would be sent to ' + phone + '. Enter any 6-digit code to test verification.';
+                        success.style.display = 'block';
+                        verifyStep.style.display = 'block';
+                        document.getElementById('sms-code-input').focus();
+                        sendBtn.disabled = false;
+                    }, 1500);
+                    return;
+                }
+                
+                // For production, you would need an API key
+                // This is a demo, so we'll show a message
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                    error.innerHTML = 'API key required. <a href="#pricing" style="color: var(--primary-color); font-weight: 600;">Get your free API key</a> to test with real SMS, or use the code examples below with your API key.';
+                    error.style.display = 'block';
+                    sendBtn.disabled = false;
+                }, 1500);
+                
+            } catch (err) {
+                loading.style.display = 'none';
+                error.textContent = `Error: ${err.message || 'Failed to send code. Please try again.'}`;
+                error.style.display = 'block';
+                sendBtn.disabled = false;
+            }
+        }
+
+        // Handle verifying SMS code
+        async function handleVerifySmsCode() {
+            const codeInput = document.getElementById('sms-code-input');
+            const verifyBtn = document.getElementById('sms-verify-btn');
+            const loading = document.getElementById('sms-verify-loading');
+            const error = document.getElementById('sms-verify-error');
+            const success = document.getElementById('sms-verify-success');
+            
+            const code = codeInput.value.trim();
+            
+            // Reset UI
+            error.style.display = 'none';
+            success.style.display = 'none';
+            verifyBtn.disabled = true;
+            
+            if (!code) {
+                error.textContent = 'Please enter the verification code.';
+                error.style.display = 'block';
+                verifyBtn.disabled = false;
+                return;
+            }
+            
+            if (!/^\d{6}$/.test(code)) {
+                error.textContent = 'Verification code must be 6 digits.';
+                error.style.display = 'block';
+                verifyBtn.disabled = false;
+                return;
+            }
+            
+            loading.style.display = 'flex';
+            
+            try {
+                // In test mode, simulate verification
+                if (smsTestMode) {
+                    setTimeout(() => {
+                        loading.style.display = 'none';
+                        success.textContent = '✅ Test mode: Code verified successfully! In production, this would verify the code with Twilio.';
+                        success.style.display = 'block';
+                        verifyBtn.disabled = false;
+                    }, 1500);
+                    return;
+                }
+                
+                // For production, you would need an API key
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                    error.innerHTML = 'API key required. <a href="#pricing" style="color: var(--primary-color); font-weight: 600;">Get your free API key</a> to test with real SMS, or use the code examples below with your API key.';
+                    error.style.display = 'block';
+                    verifyBtn.disabled = false;
+                }, 1500);
+                
+            } catch (err) {
+                loading.style.display = 'none';
+                error.textContent = `Error: ${err.message || 'Failed to verify code. Please try again.'}`;
+                error.style.display = 'block';
+                verifyBtn.disabled = false;
+            }
+        }
+
+        // Allow Enter key to trigger actions
+        document.addEventListener('DOMContentLoaded', function() {
+            checkSmsTestMode();
+            
+            const phoneInput = document.getElementById('sms-phone-input');
+            const codeInput = document.getElementById('sms-code-input');
+            
+            if (phoneInput) {
+                phoneInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        handleSendSmsCode();
+                    }
+                });
+            }
+            
+            if (codeInput) {
+                codeInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        handleVerifySmsCode();
+                    }
+                });
+                
+                // Only allow digits
+                codeInput.addEventListener('input', function(e) {
+                    e.target.value = e.target.value.replace(/\D/g, '');
                 });
             }
         });

@@ -21,6 +21,7 @@
     "axios": "^1.13.2",
     "firebase-admin": "^13.6.0",
     "libphonenumber-js": "^1.12.31",
-    "resend": "^4.0.0"
+    "resend": "^4.0.0",
+    "twilio": "^5.3.5"
   }
 }
