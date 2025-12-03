@@ -163,10 +163,11 @@ module.exports = async (req, res) => {
     } catch (emailError) {
       // Email sending failure should NOT break the flow
       // Log the error but continue to return the API key
-      emailErrorMsg = emailError.message || 'Unknown error';
+      emailErrorMsg = emailError.message || emailError.toString() || 'Unknown error';
       console.error(`Failed to send welcome email to ${email} for free plan:`, emailError);
       console.error('Email error details:', emailErrorMsg);
-      if (emailErrorMsg.includes('RESEND_KEY')) {
+      console.error('Full error object:', JSON.stringify(emailError, Object.getOwnPropertyNames(emailError)));
+      if (emailErrorMsg.includes('RESEND_KEY') || emailErrorMsg.includes('environment variable')) {
         emailErrorMsg = 'RESEND_KEY environment variable is missing. Please configure it in Vercel.';
       }
       // Continue execution - API key is still returned to the user
@@ -183,13 +184,19 @@ module.exports = async (req, res) => {
     
     if (emailSent) {
       response.message = 'API key generated and welcome email sent successfully';
-    } else if (emailErrorMsg) {
-      response.email_error = emailErrorMsg;
-      response.message = 'API key generated successfully. Email could not be sent - see email_error for details.';
+      console.log(`✅ Email sent successfully to ${email}`);
     } else {
-      response.message = 'API key generated successfully';
+      if (emailErrorMsg) {
+        response.email_error = emailErrorMsg;
+        response.message = 'API key generated successfully. Email could not be sent - see email_error for details.';
+        console.error(`❌ Email failed for ${email}:`, emailErrorMsg);
+      } else {
+        response.message = 'API key generated successfully';
+        console.log(`⚠️ Email status unknown for ${email} - email_sent is ${emailSent}`);
+      }
     }
     
+    console.log('Final response:', JSON.stringify(response, null, 2));
     return res.status(200).json(response);
 
   } catch (error) {
