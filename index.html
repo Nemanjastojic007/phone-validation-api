@@ -1594,9 +1594,9 @@ console.log(response.data);</code>
                                     placeholder="+14155552671 or 4155552671"
                                     class="demo-input"
                                 />
-                                <button class="btn demo-btn" id="test-validate-btn" onclick="handleTestValidation()">
-                                    Validate
-                                </button>
+                            <button type="button" class="btn demo-btn" id="test-validate-btn" onclick="if(!isValidationInProgress) handleTestValidation();">
+                                Validate
+                            </button>
                 </div>
                             <p class="demo-hint">No API key required for this demo. Rate limited to 5 requests/minute.</p>
                 </div>
@@ -2451,7 +2451,20 @@ console.log(response.data);</code>
         }
 
         // Test validation function
+        let isValidationInProgress = false;
+        let validationCallCount = 0;
+        
         async function handleTestValidation() {
+            // Prevent multiple simultaneous calls
+            if (isValidationInProgress) {
+                console.warn('⚠️ Validation already in progress, ignoring duplicate call. Call count:', validationCallCount);
+                return;
+            }
+            
+            validationCallCount++;
+            console.log(`📞 Validation call #${validationCallCount} at ${new Date().toISOString()}`);
+            isValidationInProgress = true;
+            
             const input = document.getElementById('test-phone-input');
             const outputContainer = document.getElementById('demo-output-container');
             const output = document.getElementById('demo-output');
@@ -2485,12 +2498,14 @@ console.log(response.data);</code>
                 }
                 
                 const url = `${apiBaseUrl}/api/test-validate?number=${encodeURIComponent(phoneNumber)}`;
+                console.log(`🌐 Making request to: ${url}`);
                 const response = await fetch(url, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
                     }
                 });
+                console.log(`✅ Response received: ${response.status} ${response.statusText}`);
                 
                 const data = await response.json();
                 
@@ -2527,15 +2542,22 @@ console.log(response.data);</code>
                 error.style.display = 'block';
                 btn.disabled = false;
                 console.error('Validation error:', err);
+            } finally {
+                isValidationInProgress = false;
             }
         }
 
-        // Allow Enter key to trigger validation
+        // Allow Enter key to trigger validation (only attach once)
+        let enterKeyListenerAttached = false;
         document.addEventListener('DOMContentLoaded', function() {
+            if (enterKeyListenerAttached) return;
+            enterKeyListenerAttached = true;
+            
             const input = document.getElementById('test-phone-input');
             if (input) {
                 input.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
+                    if (e.key === 'Enter' && !isValidationInProgress) {
+                        e.preventDefault();
                         handleTestValidation();
                     }
                 });
