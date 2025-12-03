@@ -725,6 +725,133 @@
             font-weight: 600;
         }
 
+        /* Demo Section */
+        .demo-container {
+            max-width: 800px;
+            margin: 48px auto 0;
+        }
+
+        .demo-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.03) 0%, rgba(139, 92, 246, 0.03) 100%);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .demo-input-group {
+            margin-bottom: 32px;
+        }
+
+        .demo-input-group label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+        }
+
+        .demo-input-wrapper {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .demo-input {
+            flex: 1;
+            padding: 16px 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background: white;
+            font-family: inherit;
+        }
+
+        .demo-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .demo-btn {
+            padding: 16px 32px;
+            white-space: nowrap;
+            width: auto;
+            min-width: 120px;
+        }
+
+        .demo-hint {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .demo-output-container {
+            margin-top: 32px;
+            padding-top: 32px;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .demo-output-label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+        }
+
+        .demo-output {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 24px;
+            border-radius: 12px;
+            overflow-x: auto;
+            font-family: 'SF Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+            font-size: 0.875rem;
+            line-height: 1.75;
+            margin: 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .demo-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 24px;
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        .demo-error {
+            margin-top: 24px;
+            padding: 16px 20px;
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid var(--error-color);
+            border-radius: 12px;
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .demo-card {
+                padding: 32px;
+            }
+
+            .demo-input-wrapper {
+                flex-direction: column;
+            }
+
+            .demo-btn {
+                width: 100%;
+            }
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             header {
@@ -883,6 +1010,44 @@
                     <div class="step-number">3</div>
                     <h3>Validate phone numbers instantly</h3>
                     <p>Start validating phone numbers in real-time with accurate results</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Try It Now Section -->
+        <section class="section" id="try-it-now">
+            <h2>Try It Now</h2>
+            <p>Test our phone validation API right here. No API key required. Rate limited to 5 requests per minute.</p>
+            
+            <div class="demo-container">
+                <div class="demo-card">
+                    <div class="demo-input-group">
+                        <label for="test-phone-input">Phone Number</label>
+                        <div class="demo-input-wrapper">
+                            <input 
+                                type="text" 
+                                id="test-phone-input" 
+                                placeholder="+14155552671 or 4155552671"
+                                class="demo-input"
+                            />
+                            <button class="btn demo-btn" id="test-validate-btn" onclick="handleTestValidation()">
+                                Validate
+                            </button>
+                        </div>
+                        <p class="demo-hint">Enter a phone number in any format (e.g., +14155552671, 4155552671)</p>
+                    </div>
+                    
+                    <div class="demo-output-container" id="demo-output-container" style="display: none;">
+                        <label class="demo-output-label">Response</label>
+                        <pre class="demo-output" id="demo-output"></pre>
+                    </div>
+                    
+                    <div class="demo-loading" id="demo-loading" style="display: none;">
+                        <div class="loading"></div>
+                        <span>Validating phone number...</span>
+                    </div>
+                    
+                    <div class="demo-error" id="demo-error" style="display: none;"></div>
                 </div>
             </div>
         </section>
@@ -1471,6 +1636,98 @@ validatePhone('+1234567890');</code>
                 showMessage('Failed to copy API key. Please copy it manually.', 'error');
             });
         }
+
+        // Test validation function
+        async function handleTestValidation() {
+            const input = document.getElementById('test-phone-input');
+            const outputContainer = document.getElementById('demo-output-container');
+            const output = document.getElementById('demo-output');
+            const loading = document.getElementById('demo-loading');
+            const error = document.getElementById('demo-error');
+            const btn = document.getElementById('test-validate-btn');
+            
+            const phoneNumber = input.value.trim();
+            
+            // Reset UI
+            outputContainer.style.display = 'none';
+            error.style.display = 'none';
+            error.textContent = '';
+            btn.disabled = true;
+            
+            // Validate input
+            if (!phoneNumber) {
+                error.textContent = 'Please enter a phone number.';
+                error.style.display = 'block';
+                btn.disabled = false;
+                return;
+            }
+            
+            // Show loading state
+            loading.style.display = 'flex';
+            
+            try {
+                const apiBaseUrl = getApiBaseUrl();
+                if (!apiBaseUrl && apiBaseUrl !== '') {
+                    throw new Error('Cannot determine API base URL. Please use a local server.');
+                }
+                
+                const url = `${apiBaseUrl}/api/test-validate?number=${encodeURIComponent(phoneNumber)}`;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                // Hide loading
+                loading.style.display = 'none';
+                
+                if (!response.ok) {
+                    // Handle errors
+                    if (response.status === 429) {
+                        error.textContent = 'Rate limit exceeded. Please try again in a minute.';
+                    } else if (response.status === 400) {
+                        error.textContent = data.error || data.message || 'Invalid phone number format.';
+                    } else {
+                        error.textContent = data.error || `Error: ${response.status} ${response.statusText}`;
+                    }
+                    error.style.display = 'block';
+                    btn.disabled = false;
+                    return;
+                }
+                
+                // Display successful response
+                output.textContent = JSON.stringify(data, null, 2);
+                outputContainer.style.display = 'block';
+                btn.disabled = false;
+                
+                // Scroll to output
+                setTimeout(() => {
+                    outputContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+                
+            } catch (err) {
+                loading.style.display = 'none';
+                error.textContent = `Error: ${err.message || 'Failed to validate phone number. Please try again.'}`;
+                error.style.display = 'block';
+                btn.disabled = false;
+                console.error('Validation error:', err);
+            }
+        }
+
+        // Allow Enter key to trigger validation
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('test-phone-input');
+            if (input) {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        handleTestValidation();
+                    }
+                });
+            }
+        });
 
         window.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
