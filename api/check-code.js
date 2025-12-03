@@ -64,30 +64,47 @@ async function updateOtpRequestStatus(phone, apiKey, status) {
     const db = getFirestore();
     const otpRequestsRef = db.collection('otp_requests');
     
-    // Find the most recent sent request for this phone and API key
+    // Find all sent requests for this phone and API key (without orderBy to avoid index requirement)
     const snapshot = await otpRequestsRef
       .where('phone', '==', phone)
       .where('api_key', '==', apiKey)
       .where('status', '==', 'sent')
-      .orderBy('created_at', 'desc')
-      .limit(1)
       .get();
 
     if (snapshot.empty) {
+      console.log('No sent OTP request found for phone:', phone, 'api_key:', apiKey);
       return false;
     }
 
-    const doc = snapshot.docs[0];
+    // Sort in memory to find the most recent one
+    const docs = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ref: doc.ref,
+      data: doc.data(),
+      createdAt: doc.data().created_at
+    }));
+
+    // Sort by created_at descending (most recent first)
+    docs.sort((a, b) => {
+      const aTime = a.createdAt ? a.createdAt.toMillis() : 0;
+      const bTime = b.createdAt ? b.createdAt.toMillis() : 0;
+      return bTime - aTime;
+    });
+
+    // Get the most recent one
+    const mostRecent = docs[0];
     const timestamp = admin.firestore.Timestamp.now();
 
-    await doc.ref.update({
+    await mostRecent.ref.update({
       status: status,
       verified_at: status === 'verified' ? timestamp : null
     });
 
+    console.log(`Updated OTP request ${mostRecent.id} to status: ${status}`);
     return true;
   } catch (error) {
     console.error('Error updating OTP request status:', error);
+    console.error('Error details:', error.message);
     return false;
   }
 }
