@@ -492,6 +492,103 @@
             border-radius: 20px;
             border: 2px solid var(--primary-color);
             display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1001;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .api-key-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+        }
+
+        .api-key-overlay.show {
+            display: block;
+        }
+
+        .api-key-display.show {
+            display: block;
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: scaleIn 0.3s ease-out;
+        }
+
+        .modal-header {
+            padding: 32px 40px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-light);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 32px 40px;
         }
 
         .api-key-display.show {
@@ -1060,7 +1157,7 @@
             <div id="message" class="message"></div>
             
             <div class="pricing-grid">
-                <div class="payment-card" onclick="selectPlan('free')" id="plan-free">
+                <div class="payment-card" id="plan-free">
                     <input type="radio" name="plan" value="free" class="plan-selector" id="radio-free">
                     <h3>Free</h3>
                     <div class="price-large">
@@ -1073,10 +1170,10 @@
                         <li>Number formatting</li>
                         <li>Perfect for testing</li>
                     </ul>
-                    <button class="btn btn-secondary" style="margin-top: 24px;" onclick="event.stopPropagation(); selectPlan('free'); document.getElementById('payment').scrollIntoView({behavior: 'smooth'});">Get Started</button>
+                    <button class="btn btn-secondary" style="margin-top: 24px;" onclick="event.stopPropagation(); handleFreePlanSignup();">Get Started</button>
                 </div>
 
-                <div class="payment-card popular selected" onclick="selectPlan('starter')" id="plan-starter">
+                <div class="payment-card popular selected" id="plan-starter">
                     <input type="radio" name="plan" value="starter" class="plan-selector" checked id="radio-starter">
                     <h3>Starter</h3>
                     <div class="price-large">
@@ -1089,9 +1186,10 @@
                         <li>Number formatting</li>
                         <li>Email support</li>
                     </ul>
+                    <button class="btn" style="margin-top: 24px;" onclick="event.stopPropagation(); handlePaidPlanSignup('starter');">Get Started</button>
                 </div>
 
-                <div class="payment-card pro" onclick="selectPlan('pro')" id="plan-pro">
+                <div class="payment-card pro" id="plan-pro">
                     <input type="radio" name="plan" value="pro" class="plan-selector" id="radio-pro">
                     <h3>Pro</h3>
                     <div class="price-large">
@@ -1105,6 +1203,7 @@
                         <li>Priority support</li>
                         <li>Advanced features</li>
                     </ul>
+                    <button class="btn" style="margin-top: 24px;" onclick="event.stopPropagation(); handlePaidPlanSignup('pro');">Get Started</button>
                 </div>
 
                 <div class="payment-card custom" onclick="selectPlan('custom')" id="plan-custom">
@@ -1123,27 +1222,10 @@
                     <button class="btn btn-secondary" style="margin-top: 24px;" onclick="event.stopPropagation(); window.location.href='mailto:support@example.com?subject=Custom Plan Inquiry';">Contact Sales</button>
                 </div>
             </div>
-            
-            <div class="signup-container">
-                <div class="signup-form-wrapper">
-                    <form id="paymentForm" onsubmit="handlePaymentForm(event)">
-                        <div class="form-group">
-                            <label for="paypal-name">Full Name *</label>
-                            <input type="text" id="paypal-name" name="name" required placeholder="John Doe">
-                        </div>
-                        <div class="form-group">
-                            <label for="paypal-email">Email Address *</label>
-                            <input type="email" id="paypal-email" name="email" required placeholder="john@example.com">
-                        </div>
-                        <button type="submit" class="btn" id="showPayPalBtn">
-                            Continue to Payment
-                        </button>
-                    </form>
-                    
-                    <div id="paypal-button-container" style="display: none; margin-top: 32px;"></div>
-                </div>
 
-                <div class="api-key-display" id="apiKeyDisplay">
+            <!-- API Key Display Modal -->
+            <div class="api-key-overlay" id="apiKeyOverlay" onclick="closeApiKeyModal()"></div>
+            <div class="api-key-display" id="apiKeyDisplay" style="display: none;">
                     <h3>Your API Key is Ready</h3>
                     <p style="color: var(--text-secondary); margin-bottom: 24px;">Copy your API key below. Keep it secure and don't share it publicly.</p>
                     <div class="api-key-value">
@@ -1173,6 +1255,57 @@
                             <strong>Quick Start:</strong> Use this key in the <code>x-api-key</code> header when making requests to <code>/api/validate</code>
                         </p>
                         <button class="btn btn-secondary" onclick="scrollToExamples()">View Integration Examples</button>
+                        <button class="btn btn-secondary" style="margin-left: 12px;" onclick="closeApiKeyModal()">Close</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Free Plan Email Modal -->
+            <div class="modal-overlay" id="freePlanModal" style="display: none;" onclick="if(event.target === this) closeFreePlanModal();">
+                <div class="modal-content" onclick="event.stopPropagation();">
+                    <div class="modal-header">
+                        <h3>Get Your Free API Key</h3>
+                        <button class="modal-close" onclick="closeFreePlanModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p style="color: var(--text-secondary); margin-bottom: 24px;">Enter your email address to get your free API key instantly. No payment required.</p>
+                        <form id="freePlanForm" onsubmit="handleFreePlanSubmit(event)">
+                            <div class="form-group">
+                                <label for="free-email">Email Address *</label>
+                                <input type="email" id="free-email" name="email" required placeholder="your@email.com" autocomplete="email">
+                            </div>
+                            <div id="freePlanError" class="message error" style="display: none; margin-bottom: 20px;"></div>
+                            <div id="freePlanLoading" style="display: none; text-align: center; padding: 20px;">
+                                <div class="loading"></div>
+                                <p style="margin-top: 12px; color: var(--text-secondary);">Generating your API key...</p>
+                            </div>
+                            <button type="submit" class="btn" id="freePlanSubmitBtn">Get Free API Key</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Paid Plan Payment Modal -->
+            <div class="modal-overlay" id="paidPlanModal" style="display: none;" onclick="if(event.target === this) closePaidPlanModal();">
+                <div class="modal-content" onclick="event.stopPropagation();">
+                    <div class="modal-header">
+                        <h3 id="paidPlanTitle">Complete Payment</h3>
+                        <button class="modal-close" onclick="closePaidPlanModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="paidPlanForm" onsubmit="handlePaidPlanForm(event)">
+                            <div class="form-group">
+                                <label for="paid-name">Full Name *</label>
+                                <input type="text" id="paid-name" name="name" required placeholder="John Doe" autocomplete="name">
+                            </div>
+                            <div class="form-group">
+                                <label for="paid-email">Email Address *</label>
+                                <input type="email" id="paid-email" name="email" required placeholder="john@example.com" autocomplete="email">
+                            </div>
+                            <div id="paidPlanError" class="message error" style="display: none; margin-bottom: 20px;"></div>
+                            <button type="submit" class="btn" id="paidPlanSubmitBtn">Continue to Payment</button>
+                        </form>
+                        <div id="paypal-button-container-modal" style="display: none; margin-top: 32px;"></div>
                     </div>
                 </div>
             </div>
@@ -1354,26 +1487,123 @@ validatePhone('+1234567890');</code>
             }
         }
 
-        // Handle free plan
-        function handleFreePlan() {
-            showMessage('Free plan is coming soon! Please contact us for early access.', 'error');
+        // Handle free plan signup - opens modal
+        function handleFreePlanSignup() {
+            document.getElementById('freePlanModal').style.display = 'flex';
+            document.getElementById('free-email').focus();
+        }
+
+        // Close free plan modal
+        function closeFreePlanModal() {
+            document.getElementById('freePlanModal').style.display = 'none';
+            document.getElementById('freePlanForm').reset();
+            document.getElementById('freePlanError').style.display = 'none';
+            document.getElementById('freePlanLoading').style.display = 'none';
+        }
+
+        // Handle free plan form submission
+        async function handleFreePlanSubmit(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('free-email').value.trim();
+            const errorDiv = document.getElementById('freePlanError');
+            const loadingDiv = document.getElementById('freePlanLoading');
+            const submitBtn = document.getElementById('freePlanSubmitBtn');
+            
+            // Validate email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                errorDiv.textContent = 'Please enter a valid email address.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            // Show loading, hide error
+            errorDiv.style.display = 'none';
+            loadingDiv.style.display = 'block';
+            submitBtn.disabled = true;
+            
+            try {
+                const apiBaseUrl = getApiBaseUrl();
+                const response = await fetch(`${apiBaseUrl}/api/generate-free-key`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.error || 'Failed to generate API key');
+                }
+                
+                // Success - show API key
+                closeFreePlanModal();
+                displayApiKey(result.api_key, 'free', result.requests_limit || 7, result.requests_used || 0);
+                
+            } catch (error) {
+                console.error('Error generating free API key:', error);
+                errorDiv.textContent = error.message || 'Failed to generate API key. Please try again.';
+                errorDiv.style.display = 'block';
+                loadingDiv.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Handle paid plan signup - opens modal
+        function handlePaidPlanSignup(planType) {
+            customerInfo.plan = planType;
+            const planName = plans[planType]?.name || planType;
+            document.getElementById('paidPlanTitle').textContent = `${planName} Plan - Complete Payment`;
+            document.getElementById('paidPlanModal').style.display = 'flex';
+            document.getElementById('paid-name').focus();
+        }
+
+        // Close paid plan modal
+        function closePaidPlanModal() {
+            document.getElementById('paidPlanModal').style.display = 'none';
+            document.getElementById('paidPlanForm').reset();
+            document.getElementById('paidPlanError').style.display = 'none';
+            document.getElementById('paypal-button-container-modal').style.display = 'none';
+            document.getElementById('paypal-button-container-modal').innerHTML = '';
+            paypalButtonInitialized = false;
+        }
+
+        // Close API key modal
+        function closeApiKeyModal() {
+            document.getElementById('apiKeyOverlay').classList.remove('show');
+            document.getElementById('apiKeyDisplay').style.display = 'none';
+        }
+
+        // Display API key in modal
+        function displayApiKey(apiKey, plan, requestsLimit, requestsUsed) {
+            document.getElementById('apiKeyValue').textContent = apiKey;
+            document.getElementById('keyPlan').textContent = plans[plan]?.name || plan;
+            document.getElementById('keyLimit').textContent = requestsLimit.toLocaleString();
+            document.getElementById('keyUsed').textContent = requestsUsed.toLocaleString();
+            document.getElementById('apiKeyOverlay').classList.add('show');
+            document.getElementById('apiKeyDisplay').style.display = 'block';
         }
 
         // PayPal button instance
         let paypalButtons = null;
         let paypalButtonInitialized = false;
         
-        // Initialize PayPal Button (only when needed)
-        function initPayPalButton() {
+        // Initialize PayPal Button for modal
+        function initPayPalButtonModal() {
             if (paypalButtonInitialized) return false;
             
             if (typeof paypal === 'undefined') {
                 console.error('PayPal SDK not loaded');
-                showMessage('PayPal SDK is still loading. Please wait a moment and try again.', 'error');
+                const errorDiv = document.getElementById('paidPlanError');
+                errorDiv.textContent = 'PayPal SDK is still loading. Please wait a moment and try again.';
+                errorDiv.style.display = 'block';
                 return false;
             }
             
-            const container = document.getElementById('paypal-button-container');
+            const container = document.getElementById('paypal-button-container-modal');
             if (!container) {
                 console.error('PayPal container not found');
                 return false;
@@ -1390,12 +1620,14 @@ validatePhone('+1234567890');</code>
                         label: 'paypal'
                     },
                 createOrder: async function(data, actions) {
-                    const name = customerInfo.name || document.getElementById('paypal-name')?.value || '';
-                    const email = customerInfo.email || document.getElementById('paypal-email')?.value || '';
-                    const plan = customerInfo.plan || 'standard';
+                    const name = customerInfo.name || document.getElementById('paid-name')?.value || '';
+                    const email = customerInfo.email || document.getElementById('paid-email')?.value || '';
+                    const plan = customerInfo.plan || 'starter';
                     
                     if (!email || !name) {
-                        alert('Please fill in your name and email in the form above before proceeding with payment.');
+                        const errorDiv = document.getElementById('paidPlanError');
+                        errorDiv.textContent = 'Please fill in your name and email before proceeding with payment.';
+                        errorDiv.style.display = 'block';
                         return;
                     }
 
@@ -1452,8 +1684,6 @@ validatePhone('+1234567890');</code>
                             throw new Error(captureResult.error || 'Payment capture failed');
                         }
 
-                        showMessage('✅ Payment successful! Generating your API key...', 'success');
-                        
                         const orderId = captureResult.orderId || captureResult.id;
                         
                         if (!orderId) {
@@ -1472,16 +1702,20 @@ validatePhone('+1234567890');</code>
 
                     } catch (error) {
                         console.error('Error capturing payment:', error);
-                        showMessage('Payment completed but there was an error generating your API key. Please contact support.', 'error');
+                        const errorDiv = document.getElementById('paidPlanError');
+                        errorDiv.textContent = 'Payment completed but there was an error generating your API key. Please contact support.';
+                        errorDiv.style.display = 'block';
                     }
                 },
                 onError: function(err) {
                     console.error('PayPal error:', err);
-                    showMessage('Payment error. Please try again.', 'error');
+                    const errorDiv = document.getElementById('paidPlanError');
+                    errorDiv.textContent = 'Payment error. Please try again.';
+                    errorDiv.style.display = 'block';
                 }
                 });
                 
-                paypalButtons.render('#paypal-button-container').then(() => {
+                paypalButtons.render('#paypal-button-container-modal').then(() => {
                     paypalButtonInitialized = true;
                     console.log('PayPal button rendered successfully');
                 }).catch(err => {
@@ -1497,39 +1731,37 @@ validatePhone('+1234567890');</code>
             }
         }
 
-        function scrollToPayment() {
-            document.getElementById('payment').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-        
-        function handlePaymentForm(event) {
+        // Handle paid plan form submission
+        function handlePaidPlanForm(event) {
             event.preventDefault();
-            const name = document.getElementById('paypal-name').value.trim();
-            const email = document.getElementById('paypal-email').value.trim();
+            const name = document.getElementById('paid-name').value.trim();
+            const email = document.getElementById('paid-email').value.trim();
+            const errorDiv = document.getElementById('paidPlanError');
             
             if (!name || !email) {
-                showMessage('Please fill in all required fields.', 'error');
+                errorDiv.textContent = 'Please fill in all required fields.';
+                errorDiv.style.display = 'block';
                 return;
             }
             
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
-                showMessage('Please enter a valid email address.', 'error');
+                errorDiv.textContent = 'Please enter a valid email address.';
+                errorDiv.style.display = 'block';
                 return;
             }
             
-            const selectedPlanRadio = document.querySelector('input[name="plan"]:checked');
-            const selectedPlan = selectedPlanRadio ? selectedPlanRadio.value : 'standard';
+            customerInfo = { name, email, plan: customerInfo.plan };
+            errorDiv.style.display = 'none';
             
-            customerInfo = { name, email, plan: selectedPlan };
-            
-            const container = document.getElementById('paypal-button-container');
+            const container = document.getElementById('paypal-button-container-modal');
             container.style.display = 'block';
             
             if (typeof paypal === 'undefined') {
                 container.innerHTML = '<p style="color: var(--text-secondary); padding: 16px; text-align: center;">PayPal SDK is loading. Please wait...</p>';
                 setTimeout(function() {
                     if (typeof paypal !== 'undefined') {
-                        initPayPalButton();
+                        initPayPalButtonModal();
                     } else {
                         container.innerHTML = '<p style="color: var(--error-color); padding: 16px; text-align: center;">PayPal SDK failed to load. Please refresh the page.</p>';
                     }
@@ -1537,17 +1769,7 @@ validatePhone('+1234567890');</code>
                 return;
             }
             
-            if (!paypalButtonInitialized) {
-                const success = initPayPalButton();
-                if (!success) {
-                    showMessage('Failed to initialize PayPal. Please refresh the page and try again.', 'error');
-                    return;
-                }
-            }
-            
-            setTimeout(() => {
-                container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }, 300);
+            initPayPalButtonModal();
         }
 
         function scrollToExamples() {
@@ -1578,10 +1800,10 @@ validatePhone('+1234567890');</code>
             document.getElementById('paymentSuccess').classList.remove('show');
         }
 
-        async function generateApiKeyFromPayment(orderId, email, name, plan = 'standard') {
+        async function generateApiKeyFromPayment(orderId, email, name, plan = 'starter') {
             try {
                 const apiBaseUrl = getApiBaseUrl();
-                const selectedPlan = plans[plan] || plans.standard;
+                const selectedPlan = plans[plan] || plans.starter;
                 
                 const response = await fetch(`${apiBaseUrl}/api/paypal-webhook`, {
                     method: 'POST',
@@ -1599,23 +1821,19 @@ validatePhone('+1234567890');</code>
                 const result = await response.json();
                 
                 if (response.ok && result.api_key) {
-                    document.getElementById('apiKeyValue').textContent = result.api_key;
-                    document.getElementById('keyPlan').textContent = selectedPlan.name;
-                    document.getElementById('keyLimit').textContent = selectedPlan.requests.toLocaleString();
-                    document.getElementById('keyUsed').textContent = '0';
+                    // Close paid plan modal
+                    closePaidPlanModal();
                     
-                    const apiKeyDisplay = document.getElementById('apiKeyDisplay');
-                    apiKeyDisplay.classList.add('show');
-                    apiKeyDisplay.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                    
-                    document.getElementById('message').classList.remove('show');
-                    showMessage('✅ Payment successful! Your API key has been generated below.', 'success');
+                    // Display API key
+                    displayApiKey(result.api_key, plan, selectedPlan.requests, 0);
                 } else {
                     throw new Error(result.error || 'Failed to generate API key');
                 }
             } catch (error) {
                 console.error('Error generating API key from payment:', error);
-                showMessage(`Error generating API key: ${error.message}. Please contact support with order ID: ${orderId}`, 'error');
+                const errorDiv = document.getElementById('paidPlanError');
+                errorDiv.textContent = `Error generating API key: ${error.message}. Please contact support with order ID: ${orderId}`;
+                errorDiv.style.display = 'block';
             }
         }
 
