@@ -1590,6 +1590,23 @@ validatePhone('+1234567890')
 
             <div class="demo-container">
                 <div class="demo-card" style="max-width: 600px; margin: 0 auto;">
+                    <!-- API Key Input -->
+                    <div class="demo-input-group" style="margin-bottom: 32px; padding-bottom: 32px; border-bottom: 2px solid var(--border-color);">
+                        <label for="sms-api-key-input">API Key</label>
+                        <div class="demo-input-wrapper">
+                            <input 
+                                type="text" 
+                                id="sms-api-key-input" 
+                                placeholder="pk_..."
+                                class="demo-input"
+                                style="font-family: 'SF Mono', 'Monaco', 'Menlo', monospace;"
+                            />
+                            <button class="btn btn-secondary" style="min-width: 100px;" onclick="saveApiKeyForDemo()">Save</button>
+                        </div>
+                        <p class="demo-hint">Enter your API key to test with real SMS. <a href="#pricing" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">Get your free API key</a></p>
+                        <div id="sms-api-key-status" style="margin-top: 12px; font-size: 0.875rem; display: none;"></div>
+                    </div>
+
                     <!-- Step 1: Send Code -->
                     <div id="sms-send-step">
                         <h3 style="margin-bottom: 20px; font-size: 1.25rem;">Step 1: Send Verification Code</h3>
@@ -1934,6 +1951,25 @@ async function verifyCode(phoneNumber, code) {
             document.getElementById('keyUsed').textContent = requestsUsed.toLocaleString();
             document.getElementById('apiKeyOverlay').classList.add('show');
             document.getElementById('apiKeyDisplay').style.display = 'block';
+            
+            // Auto-populate SMS demo API key field if it exists
+            const smsApiKeyInput = document.getElementById('sms-api-key-input');
+            if (smsApiKeyInput) {
+                smsApiKeyInput.value = apiKey;
+                localStorage.setItem('sms_api_key', apiKey);
+                smsApiKey = apiKey;
+                
+                // Show success message
+                const statusDiv = document.getElementById('sms-api-key-status');
+                if (statusDiv) {
+                    statusDiv.textContent = '✅ API key automatically loaded!';
+                    statusDiv.style.color = 'var(--success-color)';
+                    statusDiv.style.display = 'block';
+                    setTimeout(() => {
+                        statusDiv.style.display = 'none';
+                    }, 3000);
+                }
+            }
         }
 
         // PayPal button instance
@@ -2291,12 +2327,71 @@ async function verifyCode(phoneNumber, code) {
         // SMS Verification Demo Functions
         let smsTestMode = false;
         let smsPhoneNumber = '';
+        let smsApiKey = '';
+
+        // Get API key from localStorage or page
+        function getSmsApiKey() {
+            // Check localStorage first
+            const storedKey = localStorage.getItem('sms_api_key');
+            if (storedKey) {
+                return storedKey;
+            }
+            
+            // Check if API key is displayed on page (from API key modal)
+            const apiKeyDisplay = document.getElementById('apiKeyValue');
+            if (apiKeyDisplay && apiKeyDisplay.textContent && apiKeyDisplay.textContent.startsWith('pk_')) {
+                return apiKeyDisplay.textContent.trim();
+            }
+            
+            return '';
+        }
+
+        // Save API key for demo
+        function saveApiKeyForDemo() {
+            const apiKeyInput = document.getElementById('sms-api-key-input');
+            const statusDiv = document.getElementById('sms-api-key-status');
+            const apiKey = apiKeyInput.value.trim();
+            
+            if (!apiKey) {
+                statusDiv.textContent = 'Please enter an API key.';
+                statusDiv.style.color = 'var(--error-color)';
+                statusDiv.style.display = 'block';
+                return;
+            }
+            
+            if (!apiKey.startsWith('pk_')) {
+                statusDiv.textContent = 'Invalid API key format. API keys should start with "pk_".';
+                statusDiv.style.color = 'var(--error-color)';
+                statusDiv.style.display = 'block';
+                return;
+            }
+            
+            localStorage.setItem('sms_api_key', apiKey);
+            smsApiKey = apiKey;
+            statusDiv.textContent = '✅ API key saved! You can now test SMS verification.';
+            statusDiv.style.color = 'var(--success-color)';
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
+        }
 
         // Check if we're in test mode (no API key means test mode)
         function checkSmsTestMode() {
             const apiBaseUrl = getApiBaseUrl();
             const hostname = window.location.hostname;
-            // Show test mode badge if on localhost or if no API key is available
+            
+            // Load API key
+            smsApiKey = getSmsApiKey();
+            if (smsApiKey) {
+                const apiKeyInput = document.getElementById('sms-api-key-input');
+                if (apiKeyInput) {
+                    apiKeyInput.value = smsApiKey;
+                }
+            }
+            
+            // Show test mode badge if on localhost
             if (hostname === 'localhost' || hostname === '127.0.0.1') {
                 smsTestMode = true;
                 document.getElementById('testModeBadge').style.display = 'block';
@@ -2334,13 +2429,22 @@ async function verifyCode(phoneNumber, code) {
                 return;
             }
             
+            // Check for API key
+            const apiKey = getSmsApiKey();
+            if (!apiKey) {
+                error.innerHTML = 'API key required. Please enter your API key above or <a href="#pricing" style="color: var(--primary-color); font-weight: 600;">get your free API key</a>.';
+                error.style.display = 'block';
+                sendBtn.disabled = false;
+                return;
+            }
+            
             loading.style.display = 'flex';
             
             try {
                 const apiBaseUrl = getApiBaseUrl();
                 
                 // In test mode, simulate success
-                if (smsTestMode) {
+                if (smsTestMode && !apiKey) {
                     setTimeout(() => {
                         loading.style.display = 'none';
                         smsPhoneNumber = phone;
@@ -2353,14 +2457,34 @@ async function verifyCode(phoneNumber, code) {
                     return;
                 }
                 
-                // For production, you would need an API key
-                // This is a demo, so we'll show a message
-                setTimeout(() => {
-                    loading.style.display = 'none';
-                    error.innerHTML = 'API key required. <a href="#pricing" style="color: var(--primary-color); font-weight: 600;">Get your free API key</a> to test with real SMS, or use the code examples below with your API key.';
+                // Call real API
+                const response = await fetch(`${apiBaseUrl}/api/send-code`, {
+                    method: 'POST',
+                    headers: {
+                        'x-api-key': apiKey,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ phone: phone })
+                });
+                
+                const data = await response.json();
+                
+                loading.style.display = 'none';
+                
+                if (!response.ok) {
+                    error.textContent = data.error || data.message || 'Failed to send verification code.';
                     error.style.display = 'block';
                     sendBtn.disabled = false;
-                }, 1500);
+                    return;
+                }
+                
+                // Success
+                smsPhoneNumber = phone;
+                success.textContent = `✅ ${data.message || 'Verification code sent successfully!'} Check your phone for the 6-digit code.`;
+                success.style.display = 'block';
+                verifyStep.style.display = 'block';
+                document.getElementById('sms-code-input').focus();
+                sendBtn.disabled = false;
                 
             } catch (err) {
                 loading.style.display = 'none';
@@ -2399,11 +2523,27 @@ async function verifyCode(phoneNumber, code) {
                 return;
             }
             
+            if (!smsPhoneNumber) {
+                error.textContent = 'Please send a verification code first.';
+                error.style.display = 'block';
+                verifyBtn.disabled = false;
+                return;
+            }
+            
+            // Check for API key
+            const apiKey = getSmsApiKey();
+            if (!apiKey) {
+                error.innerHTML = 'API key required. Please enter your API key above or <a href="#pricing" style="color: var(--primary-color); font-weight: 600;">get your free API key</a>.';
+                error.style.display = 'block';
+                verifyBtn.disabled = false;
+                return;
+            }
+            
             loading.style.display = 'flex';
             
             try {
-                // In test mode, simulate verification
-                if (smsTestMode) {
+                // In test mode without API key, simulate verification
+                if (smsTestMode && !apiKey) {
                     setTimeout(() => {
                         loading.style.display = 'none';
                         success.textContent = '✅ Test mode: Code verified successfully! In production, this would verify the code with Twilio.';
@@ -2413,13 +2553,35 @@ async function verifyCode(phoneNumber, code) {
                     return;
                 }
                 
-                // For production, you would need an API key
-                setTimeout(() => {
-                    loading.style.display = 'none';
-                    error.innerHTML = 'API key required. <a href="#pricing" style="color: var(--primary-color); font-weight: 600;">Get your free API key</a> to test with real SMS, or use the code examples below with your API key.';
+                // Call real API
+                const apiBaseUrl = getApiBaseUrl();
+                const response = await fetch(`${apiBaseUrl}/api/check-code`, {
+                    method: 'POST',
+                    headers: {
+                        'x-api-key': apiKey,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        phone: smsPhoneNumber,
+                        code: code 
+                    })
+                });
+                
+                const data = await response.json();
+                
+                loading.style.display = 'none';
+                
+                if (!response.ok || !data.verified) {
+                    error.textContent = data.error || data.message || 'Verification failed. Please check your code and try again.';
                     error.style.display = 'block';
                     verifyBtn.disabled = false;
-                }, 1500);
+                    return;
+                }
+                
+                // Success
+                success.textContent = `✅ ${data.message || 'Code verified successfully!'} Phone number verified.`;
+                success.style.display = 'block';
+                verifyBtn.disabled = false;
                 
             } catch (err) {
                 loading.style.display = 'none';
