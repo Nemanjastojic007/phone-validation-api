@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phone Validation API - Validate Phone Numbers Instantly</title>
+    <!-- Vercel Analytics -->
+    <script>
+      window.va = window.va || function() { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
     <!-- PayPal SDK - LIVE MODE -->
     <!-- IMPORTANT: Replace YOUR_LIVE_CLIENT_ID with your actual LIVE PayPal Client ID from PayPal Developer Dashboard -->
     <!-- Get it at: https://developer.paypal.com/dashboard/applications/sandbox (switch to LIVE mode) -->
@@ -2484,7 +2489,12 @@ async function verifyCode(phoneNumber, code) {
                 loading.style.display = 'none';
                 
                 if (!response.ok) {
-                    error.textContent = data.error || data.message || 'Failed to send verification code.';
+                    // Handle rate limit errors with better messaging
+                    if (response.status === 429) {
+                        error.innerHTML = `<strong>Rate Limit Exceeded:</strong><br>${data.message || data.error || 'Too many requests. Please try again later.'}<br><br><small>💡 Tip: Try using a different phone number or wait for the rate limit to reset.</small>`;
+                    } else {
+                        error.textContent = data.error || data.message || 'Failed to send verification code.';
+                    }
                     error.style.display = 'block';
                     sendBtn.disabled = false;
                     return;

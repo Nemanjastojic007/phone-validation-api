@@ -70,14 +70,12 @@ async function checkRateLimit(phone, apiKey) {
     const oneHourAgo = admin.firestore.Timestamp.fromMillis(now.toMillis() - 60 * 60 * 1000);
 
     // Check per-phone rate limit (max 3 per hour)
-    // Note: This query requires a composite index in Firestore
-    // If index doesn't exist, we'll catch the error and allow the request
+    // Use simple query without orderBy to avoid index requirement
     let phoneSnapshot;
     try {
       phoneSnapshot = await otpRequestsRef
         .where('phone', '==', phone)
         .where('status', '==', 'sent')
-        .orderBy('created_at', 'desc')
         .get();
       
       // Filter in memory for requests within last hour
@@ -89,35 +87,28 @@ async function checkRateLimit(phone, apiKey) {
 
       if (recentPhoneRequests.length >= 3) {
         // Calculate when the oldest request will expire
-        const oldestRequest = recentPhoneRequests[recentPhoneRequests.length - 1];
-        const oldestTimestamp = oldestRequest.data().created_at;
-        if (oldestTimestamp) {
-          const resetTime = new Date(oldestTimestamp.toMillis() + 60 * 60 * 1000);
-          const minutesUntilReset = Math.ceil((resetTime.getTime() - Date.now()) / 60000);
-          return { 
-            allowed: false, 
-            reason: `Rate limit exceeded: Maximum 3 SMS requests per phone number per hour. You can try again in approximately ${minutesUntilReset} minute(s).` 
-          };
-        }
+        const timestamps = recentPhoneRequests.map(doc => doc.data().created_at.toMillis()).sort((a, b) => a - b);
+        const oldestTimestamp = timestamps[0];
+        const resetTime = new Date(oldestTimestamp + 60 * 60 * 1000);
+        const minutesUntilReset = Math.max(1, Math.ceil((resetTime.getTime() - Date.now()) / 60000));
         return { 
           allowed: false, 
-          reason: 'Rate limit exceeded: Maximum 3 SMS requests per phone number per hour. Please try again later.' 
+          reason: `Rate limit exceeded: Maximum 3 SMS requests per phone number per hour. You can try again in approximately ${minutesUntilReset} minute(s).` 
         };
       }
-    } catch (indexError) {
-      // If composite index doesn't exist, log but don't block
-      console.error('Rate limit check error (index may be missing):', indexError.message);
+    } catch (queryError) {
+      // If query fails, log but allow the request (don't block due to Firestore issues)
+      console.error('Rate limit check error for phone:', queryError.message);
       // Continue with API key check
     }
 
     // Check per-API-key rate limit (max 10 per hour)
-    // Note: This query requires a composite index in Firestore
+    // Use simple query without orderBy to avoid index requirement
     let apiKeySnapshot;
     try {
       apiKeySnapshot = await otpRequestsRef
         .where('api_key', '==', apiKey)
         .where('status', '==', 'sent')
-        .orderBy('created_at', 'desc')
         .get();
       
       // Filter in memory for requests within last hour
@@ -129,31 +120,26 @@ async function checkRateLimit(phone, apiKey) {
 
       if (recentApiKeyRequests.length >= 10) {
         // Calculate when the oldest request will expire
-        const oldestRequest = recentApiKeyRequests[recentApiKeyRequests.length - 1];
-        const oldestTimestamp = oldestRequest.data().created_at;
-        if (oldestTimestamp) {
-          const resetTime = new Date(oldestTimestamp.toMillis() + 60 * 60 * 1000);
-          const minutesUntilReset = Math.ceil((resetTime.getTime() - Date.now()) / 60000);
-          return { 
-            allowed: false, 
-            reason: `Rate limit exceeded: Maximum 10 SMS requests per API key per hour. You can try again in approximately ${minutesUntilReset} minute(s).` 
-          };
-        }
+        const timestamps = recentApiKeyRequests.map(doc => doc.data().created_at.toMillis()).sort((a, b) => a - b);
+        const oldestTimestamp = timestamps[0];
+        const resetTime = new Date(oldestTimestamp + 60 * 60 * 1000);
+        const minutesUntilReset = Math.max(1, Math.ceil((resetTime.getTime() - Date.now()) / 60000));
         return { 
           allowed: false, 
-          reason: 'Rate limit exceeded: Maximum 10 SMS requests per API key per hour. Please try again later.' 
+          reason: `Rate limit exceeded: Maximum 10 SMS requests per API key per hour. You can try again in approximately ${minutesUntilReset} minute(s).` 
         };
       }
-    } catch (indexError) {
-      // If composite index doesn't exist, log but don't block
-      console.error('Rate limit check error (index may be missing):', indexError.message);
+    } catch (queryError) {
+      // If query fails, log but allow the request (don't block due to Firestore issues)
+      console.error('Rate limit check error for API key:', queryError.message);
       // Allow the request if we can't check rate limits
     }
 
     return { allowed: true };
   } catch (error) {
     console.error('Error checking rate limit:', error);
-    return { allowed: false, reason: 'Error checking rate limits' };
+    // On error, allow the request (fail open) to avoid blocking legitimate users
+    return { allowed: true };
   }
 }
 
@@ -259,9 +245,11 @@ module.exports = async (req, res) => {
     // Check rate limits
     const rateLimitCheck = await checkRateLimit(formattedPhone, apiKey);
     if (!rateLimitCheck.allowed) {
+      // Return detailed rate limit error with helpful message
       return res.status(429).json({
         error: 'Rate limit exceeded',
-        message: rateLimitCheck.reason
+        message: rateLimitCheck.reason,
+        retry_after: '1 hour'
       });
     }
 
