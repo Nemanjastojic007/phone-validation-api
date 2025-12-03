@@ -2489,11 +2489,16 @@ async function verifyCode(phoneNumber, code) {
                 loading.style.display = 'none';
                 
                 if (!response.ok) {
-                    // Handle rate limit errors with better messaging
+                    // Handle different error types with better messaging
                     if (response.status === 429) {
                         error.innerHTML = `<strong>Rate Limit Exceeded:</strong><br>${data.message || data.error || 'Too many requests. Please try again later.'}<br><br><small>💡 Tip: Try using a different phone number or wait for the rate limit to reset.</small>`;
+                    } else if (response.status === 500) {
+                        // Internal server error - show detailed message
+                        const errorDetails = data.message || data.error || 'Internal server error';
+                        const errorCode = data.code ? `<br><small>Error code: ${data.code}</small>` : '';
+                        error.innerHTML = `<strong>Server Error:</strong><br>${errorDetails}${errorCode}<br><br><small>💡 This usually means:<br>1. Twilio credentials not configured (check Vercel environment variables)<br>2. Twilio Verify Service not set up<br>3. Invalid phone number format</small>`;
                     } else {
-                        error.textContent = data.error || data.message || 'Failed to send verification code.';
+                        error.innerHTML = `<strong>Error:</strong><br>${data.error || data.message || 'Failed to send verification code.'}`;
                     }
                     error.style.display = 'block';
                     sendBtn.disabled = false;
@@ -2510,7 +2515,9 @@ async function verifyCode(phoneNumber, code) {
                 
             } catch (err) {
                 loading.style.display = 'none';
-                error.textContent = `Error: ${err.message || 'Failed to send code. Please try again.'}`;
+                // Show more detailed error message
+                const errorMsg = err.message || 'Failed to send code. Please try again.';
+                error.innerHTML = `<strong>Error:</strong> ${errorMsg}<br><br><small>If this persists, please check:<br>1. Twilio credentials are configured in Vercel (TWILIO_SID, TWILIO_AUTH_TOKEN, TWILIO_VERIFY_SERVICE)<br>2. Your phone number is valid and in E.164 format (+1234567890)</small>`;
                 error.style.display = 'block';
                 sendBtn.disabled = false;
             }

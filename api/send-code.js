@@ -258,22 +258,86 @@ module.exports = async (req, res) => {
     if (!TWILIO_VERIFY_SERVICE) {
       return res.status(500).json({
         error: 'Service configuration error',
-        message: 'SMS verification service is not configured'
+        message: 'TWILIO_VERIFY_SERVICE environment variable is not configured. Please set it in Vercel.'
+      });
+    }
+
+    // Check Twilio credentials
+    const TWILIO_SID = process.env.TWILIO_SID;
+    const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
+    if (!TWILIO_SID || !TWILIO_AUTH_TOKEN) {
+      return res.status(500).json({
+        error: 'Twilio configuration error',
+        message: 'TWILIO_SID or TWILIO_AUTH_TOKEN environment variables are not configured. Please set them in Vercel.'
       });
     }
 
     // Send verification code via Twilio
-    const twilio = getTwilioClient();
-    const verification = await twilio.verify.v2
-      .services(TWILIO_VERIFY_SERVICE)
-      .verifications
-      .create({
-        to: formattedPhone,
-        channel: 'sms'
+    let twilio;
+    try {
+      twilio = getTwilioClient();
+    } catch (twilioError) {
+      return res.status(500).json({
+        error: 'Twilio initialization error',
+        message: twilioError.message || 'Failed to initialize Twilio client. Please check your Twilio credentials.'
       });
+    }
+
+    let verification;
+    try {
+      verification = await twilio.verify.v2
+        .services(TWILIO_VERIFY_SERVICE)
+        .verifications
+        .create({
+          to: formattedPhone,
+          channel: 'sms'
+        });
+    } catch (twilioError) {
+      console.error('Twilio API error:', twilioError);
+      
+      // Handle Twilio-specific errors
+      if (twilioError.code === 60200 || twilioError.code === 60203) {
+        return res.status(400).json({
+          error: 'Invalid phone number',
+          message: 'The phone number provided is not valid for SMS delivery. Please check the phone number format.'
+        });
+      }
+
+      if (twilioError.code === 20429) {
+        return res.status(429).json({
+          error: 'Rate limit exceeded',
+          message: 'Too many requests to Twilio. Please try again later.'
+        });
+      }
+
+      if (twilioError.code === 20003) {
+        return res.status(500).json({
+          error: 'Twilio authentication error',
+          message: 'Invalid Twilio credentials. Please check TWILIO_SID and TWILIO_AUTH_TOKEN in Vercel.'
+        });
+      }
+
+      if (twilioError.code === 20404) {
+        return res.status(500).json({
+          error: 'Twilio service not found',
+          message: `Twilio Verify Service ${TWILIO_VERIFY_SERVICE} not found. Please check TWILIO_VERIFY_SERVICE in Vercel.`
+        });
+      }
+
+      return res.status(500).json({
+        error: 'Twilio API error',
+        message: twilioError.message || 'Failed to send verification code via Twilio. Please check your Twilio configuration.',
+        code: twilioError.code
+      });
+    }
 
     // Save OTP request to Firestore
-    await saveOtpRequest(formattedPhone, apiKey, verification.sid);
+    try {
+      await saveOtpRequest(formattedPhone, apiKey, verification.sid);
+    } catch (firestoreError) {
+      // Log Firestore error but don't fail the request since SMS was sent
+      console.error('Error saving OTP request to Firestore:', firestoreError);
+    }
 
     // Return success response
     return res.status(200).json({
@@ -284,26 +348,13 @@ module.exports = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error sending verification code:', error);
+    console.error('Unexpected error sending verification code:', error);
+    console.error('Error stack:', error.stack);
     
-    // Handle Twilio-specific errors
-    if (error.code === 60200 || error.code === 60203) {
-      return res.status(400).json({
-        error: 'Invalid phone number',
-        message: 'The phone number provided is not valid for SMS delivery'
-      });
-    }
-
-    if (error.code === 20429) {
-      return res.status(429).json({
-        error: 'Rate limit exceeded',
-        message: 'Too many requests. Please try again later.'
-      });
-    }
-
     return res.status(500).json({
       error: 'Internal server error',
-      message: 'Failed to send verification code. Please try again later.'
+      message: error.message || 'An unexpected error occurred. Please try again later.',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 };
