@@ -51,7 +51,7 @@
 
         /* Header */
         header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
             color: white;
             padding: 120px 20px 100px;
             text-align: center;
@@ -596,8 +596,9 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(4px);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             z-index: 1000;
             display: flex;
             align-items: center;
@@ -609,6 +610,21 @@
         body.modal-open {
             overflow: hidden;
             padding-right: 0;
+        }
+
+        body.modal-open main,
+        body.modal-open header,
+        body.modal-open footer {
+            filter: blur(8px);
+            transition: filter 0.3s ease;
+            pointer-events: none;
+        }
+
+        body.modal-open .modal-overlay,
+        body.modal-open .modal-overlay *,
+        body.modal-open .floating-cta {
+            filter: none !important;
+            pointer-events: auto;
         }
 
         .modal-content {
@@ -2105,12 +2121,18 @@ console.log(response.data);</code>
                 // Show email status message
                 if (result.email_sent === true) {
                     setTimeout(() => {
-                        showMessage('✅ API key generated and welcome email sent! Check your inbox.', 'success');
+                        showMessage('✅ API key generated and welcome email sent! Check your inbox (and spam folder).', 'success');
                     }, 1000);
-                } else if (result.email_sent === false) {
-                    const emailMsg = result.email_error || 'Email could not be sent. Please check RESEND_KEY configuration in Vercel.';
+                } else if (result.email_sent === false || result.email_error) {
+                    const emailMsg = result.email_error || 'Email could not be sent. Please check RESEND_KEY configuration in Vercel environment variables.';
+                    console.error('Email sending failed:', emailMsg);
                     setTimeout(() => {
-                        showMessage(`⚠️ API key generated successfully, but welcome email could not be sent: ${emailMsg}`, 'error');
+                        showMessage(`⚠️ API key generated successfully, but welcome email could not be sent. Error: ${emailMsg}`, 'error');
+                    }, 1000);
+                } else {
+                    // If email_sent is not in response, assume it might have been sent
+                    setTimeout(() => {
+                        showMessage('✅ API key generated! If you don\'t receive an email, check your spam folder or contact support.', 'success');
                     }, 1000);
                 }
                 
