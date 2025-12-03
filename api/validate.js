@@ -157,10 +157,10 @@ module.exports = async (req, res) => {
 
   } catch (error) {
     // Handle parsing errors (invalid phone number format, etc.)
-    // Return 500 status for parsing failures
-    return res.status(500).json({
-      error: 'Failed to parse phone number',
-      message: error.message,
+    // Return 400 status for invalid input
+    return res.status(400).json({
+      error: 'Invalid phone number format',
+      message: 'Please provide a valid phone number',
       valid: false
     });
   }

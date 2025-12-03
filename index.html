@@ -92,10 +92,56 @@
 
 
         header .trust-signals {
-            margin-top: 24px;
-            font-size: 0.875rem;
-            opacity: 0.85;
+            margin-top: 32px;
+            font-size: 0.9375rem;
+            opacity: 0.9;
             font-weight: 400;
+        }
+
+        .header-cta {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .btn-hero {
+            background: white;
+            color: var(--primary-color);
+            border: none;
+            padding: 18px 40px;
+            border-radius: 12px;
+            font-size: 1.125rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-hero:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-hero-secondary {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 18px 40px;
+            border-radius: 12px;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-hero-secondary:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
         }
 
         /* Main Content */
@@ -994,6 +1040,17 @@
                 font-size: 1.125rem;
             }
 
+            .header-cta {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn-hero,
+            .btn-hero-secondary {
+                width: 100%;
+                margin: 0;
+            }
+
 
             .benefits-list li {
                 padding: 20px;
@@ -1056,8 +1113,12 @@
     <header>
         <div class="container">
             <h1>Validate any phone number worldwide instantly</h1>
-            <p class="subheadline">Prevent invalid signups, clean your leads, and get accurate phone data in seconds</p>
-            <p class="trust-signals">Secure payments. No credit card stored.</p>
+            <p class="subheadline">Fast, accurate phone validation API for developers. Get started free with 7 requests, no credit card required.</p>
+            <div class="header-cta">
+                <button class="btn btn-hero" onclick="handleFreePlanSignup()">Try Free</button>
+                <a href="#try-it-now" class="btn btn-hero-secondary">Test API</a>
+            </div>
+            <p class="trust-signals">✓ Free trial available &nbsp;•&nbsp; ✓ Instant API key &nbsp;•&nbsp; ✓ Developer-friendly</p>
         </div>
     </header>
 
@@ -1095,18 +1156,18 @@
             <div class="steps-container">
                 <div class="step">
                     <div class="step-number">1</div>
-                    <h3>Pay and get API key</h3>
-                    <p>Choose your plan, complete secure payment, and receive your API key instantly</p>
+                    <h3>Get your API key</h3>
+                    <p>Start with our free plan (7 requests) or choose a paid plan. Get your API key instantly via email</p>
                 </div>
                 <div class="step">
                     <div class="step-number">2</div>
-                    <h3>Integrate API in your project</h3>
-                    <p>Add our REST API to your application with simple code integration</p>
+                    <h3>Integrate in minutes</h3>
+                    <p>Add our REST API to your application with simple code. Works with any language or framework</p>
                 </div>
                 <div class="step">
                     <div class="step-number">3</div>
-                    <h3>Validate phone numbers instantly</h3>
-                    <p>Start validating phone numbers in real-time with accurate results</p>
+                    <h3>Validate instantly</h3>
+                    <p>Start validating phone numbers in real-time with accurate results and country detection</p>
                 </div>
             </div>
         </section>
@@ -1114,7 +1175,7 @@
         <!-- Try It Now Section -->
         <section class="section" id="try-it-now">
             <h2>Try It Now</h2>
-            <p>Test our phone validation API right here. No API key required. Rate limited to 5 requests per minute.</p>
+            <p>Test our phone validation API right here. No API key required. Rate limited to 5 requests per minute per IP.</p>
             
             <div class="demo-container">
                 <div class="demo-card">
@@ -1152,7 +1213,7 @@
         <!-- Pricing Section -->
         <section class="section payment-section" id="pricing">
             <h2>Choose Your Plan</h2>
-            <p>Start with a free trial or choose a plan that fits your needs. Get your API key instantly.</p>
+            <p>Start free with 7 requests, no credit card required. Upgrade anytime for more volume. Get your API key instantly via email.</p>
             
             <div id="message" class="message"></div>
             
@@ -1324,19 +1385,19 @@
 async function validatePhone(phoneNumber) {
   try {
     const response = await axios.get(
-      'https://your-api-domain.com/api/validate',
+      'https://phone-validation-api.vercel.app/api/validate',
       {
         params: {
           phone: phoneNumber,
           country: 'US'
         },
         headers: {
-          'x-api-key': 'your-api-key-here'
+          'x-api-key': 'YOUR_API_KEY'
         }
       }
     );
     
-    console.log(response.data);
+    return response.data;
     // {
     //   valid: true,
     //   number: "+12345678901",
@@ -1344,7 +1405,7 @@ async function validatePhone(phoneNumber) {
     //   type: "mobile"
     // }
   } catch (error) {
-    console.error('Validation failed:', error.response?.data);
+    throw new Error(error.response?.data?.error || 'Validation failed');
   }
 }
 
@@ -1355,8 +1416,8 @@ validatePhone('+1234567890');</code>
             <h3>cURL</h3>
             <div class="integration-example">
                 <div class="code-block">
-                    <code>curl -X GET "https://your-api-domain.com/api/validate?phone=+1234567890&country=US" \
-  -H "x-api-key: your-api-key-here" \
+                    <code>curl -X GET "https://phone-validation-api.vercel.app/api/validate?phone=+1234567890&country=US" \
+  -H "x-api-key: YOUR_API_KEY" \
   -H "Content-Type: application/json"</code>
                 </div>
             </div>
@@ -1367,24 +1428,40 @@ validatePhone('+1234567890');</code>
                     <code>async function validatePhone(phoneNumber) {
   try {
     const response = await fetch(
-      `https://your-api-domain.com/api/validate?phone=${encodeURIComponent(phoneNumber)}&country=US`,
+      `https://phone-validation-api.vercel.app/api/validate?phone=${encodeURIComponent(phoneNumber)}&country=US`,
       {
         method: 'GET',
         headers: {
-          'x-api-key': 'your-api-key-here',
+          'x-api-key': 'YOUR_API_KEY',
           'Content-Type': 'application/json'
         }
       }
     );
     
-    const data = await response.json();
-    console.log(data);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Validation failed');
+    }
+    
+    return await response.json();
   } catch (error) {
-    console.error('Validation failed:', error);
+    throw new Error(error.message || 'Validation failed');
   }
 }
 
-validatePhone('+1234567890');</code>
+// Usage
+validatePhone('+1234567890')
+  .then(result => {
+    // {
+    //   valid: true,
+    //   number: "+12345678901",
+    //   country: "US",
+    //   type: "mobile"
+    // }
+  })
+  .catch(error => {
+    // Handle error
+  });</code>
                 </div>
             </div>
         </section>
@@ -1392,7 +1469,7 @@ validatePhone('+1234567890');</code>
 
     <footer>
         <div class="container">
-            <p>&copy; 2024 Phone Validation API. All rights reserved.</p>
+            <p>&copy; 2025 Phone Validation API. All rights reserved.</p>
         </div>
     </footer>
 
@@ -1409,9 +1486,7 @@ validatePhone('+1234567890');</code>
         // Get API base URL
         function getApiBaseUrl() {
             if (window.location.protocol === 'file:') {
-                console.error('❌ Cannot run from file:// protocol. Please use a local server.');
-                alert('Please run this site using a local server.\n\nRun: npm run dev\nThen open: http://localhost:3000');
-                return null;
+                return 'https://phone-validation-api.vercel.app';
             }
             
             const hostname = window.location.hostname;
@@ -1544,7 +1619,6 @@ validatePhone('+1234567890');</code>
                 displayApiKey(result.api_key, 'free', result.requests_limit || 7, result.requests_used || 0);
                 
             } catch (error) {
-                console.error('Error generating free API key:', error);
                 errorDiv.textContent = error.message || 'Failed to generate API key. Please try again.';
                 errorDiv.style.display = 'block';
                 loadingDiv.style.display = 'none';
@@ -1596,7 +1670,6 @@ validatePhone('+1234567890');</code>
             if (paypalButtonInitialized) return false;
             
             if (typeof paypal === 'undefined') {
-                console.error('PayPal SDK not loaded');
                 const errorDiv = document.getElementById('paidPlanError');
                 errorDiv.textContent = 'PayPal SDK is still loading. Please wait a moment and try again.';
                 errorDiv.style.display = 'block';
@@ -1605,7 +1678,6 @@ validatePhone('+1234567890');</code>
             
             const container = document.getElementById('paypal-button-container-modal');
             if (!container) {
-                console.error('PayPal container not found');
                 return false;
             }
             
@@ -1660,8 +1732,9 @@ validatePhone('+1234567890');</code>
 
                         return result.orderId;
                     } catch (error) {
-                        console.error('Error creating PayPal order:', error);
-                        alert('Failed to create payment. Please try again.');
+                        const errorDiv = document.getElementById('paidPlanError');
+                        errorDiv.textContent = 'Failed to create payment. Please try again.';
+                        errorDiv.style.display = 'block';
                     }
                 },
                 onApprove: async function(data, actions) {
@@ -1701,14 +1774,12 @@ validatePhone('+1234567890');</code>
                         await generateApiKeyFromPayment(orderId, payerEmail, payerName, customerInfo.plan);
 
                     } catch (error) {
-                        console.error('Error capturing payment:', error);
                         const errorDiv = document.getElementById('paidPlanError');
                         errorDiv.textContent = 'Payment completed but there was an error generating your API key. Please contact support.';
                         errorDiv.style.display = 'block';
                     }
                 },
                 onError: function(err) {
-                    console.error('PayPal error:', err);
                     const errorDiv = document.getElementById('paidPlanError');
                     errorDiv.textContent = 'Payment error. Please try again.';
                     errorDiv.style.display = 'block';
@@ -1717,15 +1788,12 @@ validatePhone('+1234567890');</code>
                 
                 paypalButtons.render('#paypal-button-container-modal').then(() => {
                     paypalButtonInitialized = true;
-                    console.log('PayPal button rendered successfully');
-                }).catch(err => {
-                    console.error('PayPal button render error:', err);
+                }).catch(() => {
                     container.innerHTML = '<p style="color: var(--error-color); padding: 16px; text-align: center;">PayPal button failed to load. Please refresh the page and try again.</p>';
                 });
                 
                 return true;
             } catch (error) {
-                console.error('Error creating PayPal button:', error);
                 container.innerHTML = '<p style="color: var(--error-color); padding: 16px; text-align: center;">Error initializing PayPal. Please refresh the page.</p>';
                 return false;
             }
@@ -1830,7 +1898,6 @@ validatePhone('+1234567890');</code>
                     throw new Error(result.error || 'Failed to generate API key');
                 }
             } catch (error) {
-                console.error('Error generating API key from payment:', error);
                 const errorDiv = document.getElementById('paidPlanError');
                 errorDiv.textContent = `Error generating API key: ${error.message}. Please contact support with order ID: ${orderId}`;
                 errorDiv.style.display = 'block';
@@ -1849,8 +1916,7 @@ validatePhone('+1234567890');</code>
                     copyBtn.textContent = originalText;
                     copyBtn.classList.remove('copied');
                 }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy:', err);
+            }).catch(() => {
                 showMessage('Failed to copy API key. Please copy it manually.', 'error');
             });
         }

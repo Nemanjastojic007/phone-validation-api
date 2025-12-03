@@ -138,7 +138,6 @@ module.exports = async (req, res) => {
     // Save to Firestore
     await saveFreeApiKeyToFirestore(apiKey, email);
 
-    console.log(`Free API key generated and saved for email ${email}: ${apiKey}`);
 
     // Send welcome email to user after successful API key generation
     // Email is sent to the user's email address provided in the request
@@ -152,7 +151,6 @@ module.exports = async (req, res) => {
         FREE_PLAN_CONFIG.requests, // Monthly request limit (7)
         null                        // No name for free plan
       );
-      console.log(`Welcome email sent successfully to ${email} for free plan`);
     } catch (emailError) {
       // Email sending failure should NOT break the flow
       // Log the error but continue to return the API key

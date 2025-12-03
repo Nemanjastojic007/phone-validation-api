@@ -225,7 +225,6 @@ module.exports = async (req, res) => {
         }
       }
     } catch (e) {
-      console.log('Could not extract plan from PayPal order, using provided/default plan');
     }
 
     // Extract email from PayPal order details or use provided email
@@ -241,7 +240,6 @@ module.exports = async (req, res) => {
         payerEmail = orderData.purchase_units[0].payee.email_address;
       }
     } catch (e) {
-      console.log('Could not extract email from PayPal order, using provided email');
     }
 
     // Validate email is available
@@ -255,7 +253,6 @@ module.exports = async (req, res) => {
     // Save to Firestore
     const savedData = await saveApiKeyToFirestore(apiKey, orderId, finalPlan);
 
-    console.log(`API key generated and saved for order ${orderId} (plan: ${finalPlan}): ${apiKey}`);
 
     // Send welcome email to user after successful API key generation
     // Email is sent to the payer's email address extracted from PayPal order or request body
@@ -271,7 +268,6 @@ module.exports = async (req, res) => {
           planConfig.requests,  // Monthly request limit
           name || null          // User's name if provided
         );
-        console.log(`Welcome email sent successfully to ${payerEmail} for order ${orderId}`);
       } catch (emailError) {
         // Email sending failure should NOT break the payment flow
         // Log the error but continue to return the API key
