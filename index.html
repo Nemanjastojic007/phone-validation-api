@@ -1910,6 +1910,18 @@ async function verifyCode(phoneNumber, code) {
                 closeFreePlanModal();
                 displayApiKey(result.api_key, 'free', result.requests_limit || 7, result.requests_used || 0);
                 
+                // Show email status message
+                if (result.email_sent === true) {
+                    setTimeout(() => {
+                        showMessage('✅ API key generated and welcome email sent! Check your inbox.', 'success');
+                    }, 1000);
+                } else if (result.email_sent === false) {
+                    const emailMsg = result.email_error || 'Email could not be sent. Please check RESEND_KEY configuration in Vercel.';
+                    setTimeout(() => {
+                        showMessage(`⚠️ API key generated successfully, but welcome email could not be sent: ${emailMsg}`, 'error');
+                    }, 1000);
+                }
+                
             } catch (error) {
                 errorDiv.textContent = error.message || 'Failed to generate API key. Please try again.';
                 errorDiv.style.display = 'block';

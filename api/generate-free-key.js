@@ -143,29 +143,54 @@ module.exports = async (req, res) => {
     // Email is sent to the user's email address provided in the request
     // This happens for free plan signups
     // If email sending fails, we log the error but don't break the flow
+    let emailSent = false;
+    let emailErrorMsg = null;
     try {
-      await sendWelcomeEmail(
-        email,                      // User's email address
-        apiKey,                     // Generated API key
-        FREE_PLAN_CONFIG.name,      // Plan name ("Free")
-        FREE_PLAN_CONFIG.requests, // Monthly request limit (7)
-        null                        // No name for free plan
-      );
+      // Check if RESEND_KEY is configured
+      if (!process.env.RESEND_KEY) {
+        emailErrorMsg = 'RESEND_KEY environment variable is not set. Please configure it in Vercel to enable email sending.';
+        console.error(emailErrorMsg);
+      } else {
+        await sendWelcomeEmail(
+          email,                      // User's email address
+          apiKey,                     // Generated API key
+          FREE_PLAN_CONFIG.name,      // Plan name ("Free")
+          FREE_PLAN_CONFIG.requests, // Monthly request limit (7)
+          null                        // No name for free plan
+        );
+        emailSent = true;
+      }
     } catch (emailError) {
       // Email sending failure should NOT break the flow
       // Log the error but continue to return the API key
+      emailErrorMsg = emailError.message || 'Unknown error';
       console.error(`Failed to send welcome email to ${email} for free plan:`, emailError);
-      console.error('Email error details:', emailError.message);
+      console.error('Email error details:', emailErrorMsg);
+      if (emailErrorMsg.includes('RESEND_KEY')) {
+        emailErrorMsg = 'RESEND_KEY environment variable is missing. Please configure it in Vercel.';
+      }
       // Continue execution - API key is still returned to the user
     }
 
     // Return API key (always return even if email sending failed)
-    return res.status(200).json({
+    const response = {
       api_key: apiKey,
       plan: 'free',
       requests_limit: FREE_PLAN_CONFIG.requests,
-      requests_used: 0
-    });
+      requests_used: 0,
+      email_sent: emailSent
+    };
+    
+    if (emailSent) {
+      response.message = 'API key generated and welcome email sent successfully';
+    } else if (emailErrorMsg) {
+      response.email_error = emailErrorMsg;
+      response.message = 'API key generated successfully. Email could not be sent - see email_error for details.';
+    } else {
+      response.message = 'API key generated successfully';
+    }
+    
+    return res.status(200).json(response);
 
   } catch (error) {
     console.error('Error generating free API key:', error);
