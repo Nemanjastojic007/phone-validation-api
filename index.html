@@ -596,44 +596,21 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
             z-index: 1000;
             display: flex;
             align-items: center;
             justify-content: center;
             animation: fadeIn 0.3s ease-out;
-            overflow: hidden;
         }
 
         body.modal-open {
             overflow: hidden !important;
-            padding-right: 0;
-            margin: 0;
-            width: 100%;
-            position: fixed;
         }
 
         html.modal-open {
             overflow: hidden !important;
-            margin: 0;
-            padding: 0;
-            width: 100%;
-        }
-
-        body.modal-open > *:not(.modal-overlay):not(.floating-cta) {
-            filter: blur(10px);
-            transition: filter 0.3s ease;
-            pointer-events: none;
-        }
-
-        body.modal-open .modal-overlay,
-        body.modal-open .modal-overlay *,
-        body.modal-open .floating-cta,
-        body.modal-open .floating-cta * {
-            filter: none !important;
-            pointer-events: auto;
         }
 
         .modal-content {
