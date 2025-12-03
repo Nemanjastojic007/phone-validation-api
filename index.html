@@ -112,6 +112,19 @@
             align-items: center;
         }
 
+        @media (max-width: 640px) {
+            .header-cta {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .header-cta .btn-hero,
+            .header-cta .btn-hero-secondary {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+
         .btn-hero {
             background: white;
             color: var(--primary-color);
@@ -590,6 +603,12 @@
             align-items: center;
             justify-content: center;
             animation: fadeIn 0.3s ease-out;
+            overflow: hidden;
+        }
+
+        body.modal-open {
+            overflow: hidden;
+            padding-right: 0;
         }
 
         .modal-content {
@@ -1281,6 +1300,7 @@
             <p class="subheadline">Complete phone number solution: validate formats, detect countries, and send SMS verification codes. One API, unlimited possibilities.</p>
             <div class="header-cta">
                 <button class="btn btn-hero" onclick="handleFreePlanSignup()">Get Started Free</button>
+                <a href="#demos" class="btn btn-hero-secondary" onclick="event.preventDefault(); document.getElementById('demos').scrollIntoView({behavior: 'smooth'});">Test API</a>
                 <a href="#documentation" class="btn btn-hero-secondary" onclick="event.preventDefault(); document.getElementById('documentation').scrollIntoView({behavior: 'smooth'});">View Docs</a>
             </div>
             <p class="trust-signals">✓ Free plan available &nbsp;•&nbsp; ✓ Instant API key &nbsp;•&nbsp; ✓ Production-ready &nbsp;•&nbsp; ✓ 99.9% uptime</p>
@@ -2027,12 +2047,14 @@ console.log(response.data);</code>
         // Handle free plan signup - opens modal
         function handleFreePlanSignup() {
             document.getElementById('freePlanModal').style.display = 'flex';
+            document.body.classList.add('modal-open');
             document.getElementById('free-email').focus();
         }
 
         // Close free plan modal
         function closeFreePlanModal() {
             document.getElementById('freePlanModal').style.display = 'none';
+            document.body.classList.remove('modal-open');
             document.getElementById('freePlanForm').reset();
             document.getElementById('freePlanError').style.display = 'none';
             document.getElementById('freePlanLoading').style.display = 'none';
@@ -2106,12 +2128,14 @@ console.log(response.data);</code>
             const planName = plans[planType]?.name || planType;
             document.getElementById('paidPlanTitle').textContent = `${planName} Plan - Complete Payment`;
             document.getElementById('paidPlanModal').style.display = 'flex';
+            document.body.classList.add('modal-open');
             document.getElementById('paid-name').focus();
         }
 
         // Close paid plan modal
         function closePaidPlanModal() {
             document.getElementById('paidPlanModal').style.display = 'none';
+            document.body.classList.remove('modal-open');
             document.getElementById('paidPlanForm').reset();
             document.getElementById('paidPlanError').style.display = 'none';
             document.getElementById('paypal-button-container-modal').style.display = 'none';
