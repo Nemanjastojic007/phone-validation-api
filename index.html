@@ -105,48 +105,49 @@
 
         .header-cta {
             display: flex;
-            gap: 16px;
+            gap: 12px;
             justify-content: center;
             margin-top: 40px;
             flex-wrap: wrap;
+            align-items: center;
         }
 
         .btn-hero {
             background: white;
             color: var(--primary-color);
             border: none;
-            padding: 18px 40px;
+            padding: 18px 36px;
             border-radius: 12px;
-            font-size: 1.125rem;
-            font-weight: 700;
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            letter-spacing: 0.3px;
         }
 
         .btn-hero:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
         }
 
         .btn-hero-secondary {
-            background: rgba(255, 255, 255, 0.15);
+            background: transparent;
             color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            padding: 18px 40px;
+            border: 2px solid white;
+            padding: 18px 36px;
             border-radius: 12px;
-            font-size: 1.125rem;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
             display: inline-block;
+            letter-spacing: 0.3px;
         }
 
         .btn-hero-secondary:hover {
-            background: rgba(255, 255, 255, 0.25);
-            border-color: rgba(255, 255, 255, 0.5);
-            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.1);
         }
 
         /* Main Content */
@@ -762,6 +763,7 @@
         /* Integration Examples */
         .integration-example {
             margin: 32px 0;
+            max-width: 100%;
         }
 
         /* Success/Error Messages */
@@ -846,6 +848,79 @@
                 opacity: 1;
                 transform: scale(1);
             }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Floating CTA Button */
+        .floating-cta {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 999;
+            display: none;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .floating-cta.show {
+            display: block;
+        }
+
+        .floating-cta button {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+            transition: all 0.3s ease;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .floating-cta button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.5);
+        }
+
+        /* Smooth scroll behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Section animations on scroll */
+        .section {
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .section:not(:first-child) {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .section.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         /* Footer */
@@ -1046,6 +1121,12 @@
             margin-bottom: 24px;
         }
 
+        @media (max-width: 1024px) {
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
         @media (max-width: 768px) {
             .features-grid {
                 grid-template-columns: 1fr;
@@ -1196,112 +1277,423 @@
 <body>
     <header>
         <div class="container">
-            <h1>Validate any phone number worldwide instantly</h1>
-            <p class="subheadline">Fast, accurate phone validation API for developers. Get started free with 7 requests, no credit card required.</p>
+            <h1>Phone Validation & SMS Verification API</h1>
+            <p class="subheadline">Complete phone number solution: validate formats, detect countries, and send SMS verification codes. One API, unlimited possibilities.</p>
             <div class="header-cta">
-                <button class="btn btn-hero" onclick="handleFreePlanSignup()">Try Free</button>
-                <a href="#try-it-now" class="btn btn-hero-secondary">Test API</a>
+                <button class="btn btn-hero" onclick="handleFreePlanSignup()">Get Started Free</button>
+                <a href="#documentation" class="btn btn-hero-secondary" onclick="event.preventDefault(); document.getElementById('documentation').scrollIntoView({behavior: 'smooth'});">View Docs</a>
             </div>
-            <p class="trust-signals">✓ Free trial available &nbsp;•&nbsp; ✓ Instant API key &nbsp;•&nbsp; ✓ Developer-friendly</p>
+            <p class="trust-signals">✓ Free plan available &nbsp;•&nbsp; ✓ Instant API key &nbsp;•&nbsp; ✓ Production-ready &nbsp;•&nbsp; ✓ 99.9% uptime</p>
         </div>
     </header>
 
     <main class="container">
-        <!-- Benefits Section -->
-        <section class="section benefits-section">
-            <h2>Why Choose Our API?</h2>
-            <ul class="benefits-list">
-                <li>
-                    <strong>Fast, accurate global phone validation</strong>
-                    <span>Validate any phone number from any country in milliseconds</span>
-                </li>
-                <li>
-                    <strong>Works for all countries and formats</strong>
-                    <span>Supports international formats, detects country codes automatically</span>
-                </li>
-                <li>
-                    <strong>Easy API integration for developers</strong>
-                    <span>Simple REST API with clear documentation and code examples</span>
-                </li>
-                <li>
-                    <strong>Pay only for what you use</strong>
-                    <span>Flexible pricing plans that scale with your needs</span>
-                </li>
-                <li>
-                    <strong>Secure, reliable backend</strong>
-                    <span>Powered by Firebase for enterprise-grade reliability and security</span>
-                </li>
-            </ul>
-        </section>
-
-        <!-- How It Works Section -->
-        <section class="section how-it-works-section">
-            <h2>How It Works</h2>
-            <div class="steps-container">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <h3>Get your API key</h3>
-                    <p>Start with our free plan (7 requests) or choose a paid plan. Get your API key instantly via email</p>
+        <!-- Features Section -->
+        <section class="section" style="padding: 64px 0;">
+            <h2 style="text-align: center; margin-bottom: 16px; font-size: 2.5rem;">Everything You Need for Phone Numbers</h2>
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: 40px; font-size: 1.125rem;">One powerful API for validation, formatting, and SMS verification</p>
+            
+            <div class="features-grid" style="margin-bottom: 0;">
+                <div class="feature-card" style="animation: fadeInUp 0.6s ease-out;">
+                    <div class="feature-icon">✓</div>
+                    <h3>Phone Validation</h3>
+                    <p>Validate any phone number format from 200+ countries. Get instant results with country detection and line type identification.</p>
                 </div>
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <h3>Integrate in minutes</h3>
-                    <p>Add our REST API to your application with simple code. Works with any language or framework</p>
+                <div class="feature-card" style="animation: fadeInUp 0.6s ease-out 0.1s both;">
+                    <div class="feature-icon">🌍</div>
+                    <h3>Global Coverage</h3>
+                    <p>Supports all international formats. Automatically detects country codes and formats numbers to E.164 standard.</p>
                 </div>
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <h3>Validate instantly</h3>
-                    <p>Start validating phone numbers in real-time with accurate results and country detection</p>
+                <div class="feature-card" style="animation: fadeInUp 0.6s ease-out 0.2s both;">
+                    <div class="feature-icon">📱</div>
+                    <h3>SMS Verification</h3>
+                    <p>Send 6-digit verification codes via SMS using Twilio Verify. Perfect for 2FA, account verification, and secure logins.</p>
+                </div>
+                <div class="feature-card" style="animation: fadeInUp 0.6s ease-out 0.3s both;">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Lightning Fast</h3>
+                    <p>Sub-100ms response times. Built on serverless infrastructure for maximum performance and reliability.</p>
+                </div>
+                <div class="feature-card" style="animation: fadeInUp 0.6s ease-out 0.4s both;">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Secure & Reliable</h3>
+                    <p>Enterprise-grade security with API key authentication. 99.9% uptime SLA with automatic failover.</p>
+                </div>
+                <div class="feature-card" style="animation: fadeInUp 0.6s ease-out 0.5s both;">
+                    <div class="feature-icon">🔌</div>
+                    <h3>Easy Integration</h3>
+                    <p>Simple REST API that works with any language. Comprehensive documentation and code examples included.</p>
                 </div>
             </div>
         </section>
 
-        <!-- Try It Now Section -->
-        <section class="section" id="try-it-now">
-            <h2>Try It Now</h2>
-            <p>Test our phone validation API right here. No API key required. Rate limited to 5 requests per minute per IP.</p>
-            
-            <div class="demo-container">
-                <div class="demo-card">
-                    <div class="demo-input-group">
-                        <label for="test-phone-input">Phone Number</label>
-                        <div class="demo-input-wrapper">
-                            <input 
-                                type="text" 
-                                id="test-phone-input" 
-                                placeholder="+14155552671 or 4155552671"
-                                class="demo-input"
-                            />
-                            <button class="btn demo-btn" id="test-validate-btn" onclick="handleTestValidation()">
-                                Validate
-                            </button>
+        <!-- Early CTA Section -->
+        <section class="section" style="text-align: center; padding: 80px 32px; background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); border-radius: 24px; margin: 64px auto; max-width: 1200px; color: white; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: -50%; right: -10%; width: 400px; height: 400px; background: rgba(255, 255, 255, 0.1); border-radius: 50%; filter: blur(80px);"></div>
+            <div style="position: absolute; bottom: -30%; left: -10%; width: 300px; height: 300px; background: rgba(255, 255, 255, 0.1); border-radius: 50%; filter: blur(80px);"></div>
+            <div style="position: relative; z-index: 1;">
+                <h2 style="color: white; margin-bottom: 24px; font-size: 2.5rem; font-weight: 800;">Ready to Get Started?</h2>
+                <p style="color: rgba(255, 255, 255, 0.95); margin-bottom: 40px; font-size: 1.25rem; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.7;">Get your free API key in seconds. No credit card required. Start validating phone numbers and sending SMS codes today.</p>
+                <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn" style="background: white; color: var(--primary-color); font-weight: 600; padding: 18px 40px; font-size: 1.125rem; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); transform: translateY(0); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 15px 35px rgba(0, 0, 0, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 25px rgba(0, 0, 0, 0.2)'" onclick="handleFreePlanSignup()">Get Free API Key</button>
+                    <a href="#pricing" class="btn" style="background: rgba(255, 255, 255, 0.15); color: white; border: 2px solid white; font-weight: 600; padding: 18px 40px; font-size: 1.125rem; text-decoration: none; backdrop-filter: blur(10px); transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255, 255, 255, 0.25)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.15)'" onclick="event.preventDefault(); document.getElementById('pricing').scrollIntoView({behavior: 'smooth'});">View Pricing</a>
+                </div>
+                <p style="color: rgba(255, 255, 255, 0.8); margin-top: 24px; font-size: 0.9375rem;">✓ 7 free requests &nbsp;•&nbsp; ✓ Instant setup &nbsp;•&nbsp; ✓ No credit card</p>
+            </div>
+        </section>
+
+        <!-- API Documentation Section -->
+        <section class="section" id="documentation" style="padding: 64px 0;">
+            <div style="text-align: center; margin-bottom: 48px;">
+                <h2 style="font-size: 2.5rem; margin-bottom: 16px;">API Documentation</h2>
+                <p style="color: var(--text-secondary); font-size: 1.125rem; max-width: 700px; margin: 0 auto;">Complete API reference with examples. All endpoints require your API key in the <code>x-api-key</code> header.</p>
+            </div>
+
+            <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%); padding: 24px; border-radius: 12px; margin: 0 auto 48px; border-left: 4px solid var(--primary-color); max-width: 900px; text-align: center;">
+                <h3 style="margin-bottom: 12px; font-size: 1.125rem;">Base URL</h3>
+                <code style="font-size: 1rem; background: white; padding: 8px 12px; border-radius: 6px; display: inline-block;">https://phone-validation-api.vercel.app</code>
+                <p style="margin-top: 12px; color: var(--text-secondary); font-size: 0.9375rem;">All requests require the <code>x-api-key</code> header with your API key.</p>
+            </div>
+
+            <!-- Validate Endpoint -->
+            <div style="margin: 0 auto 48px; max-width: 900px; background: var(--bg-white); border: 1px solid var(--border-color); border-radius: 16px; padding: 32px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
+                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+                    <span style="background: var(--primary-color); color: white; padding: 6px 12px; border-radius: 6px; font-size: 0.875rem; font-weight: 600;">GET</span>
+                    <h3 style="margin: 0; font-size: 1.5rem;">/api/validate</h3>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 24px;">Validate and format phone numbers. Returns validation status, formatted number, country code, and line type.</p>
+                
+                <div style="background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                    <div style="margin-bottom: 16px;">
+                        <strong style="display: block; margin-bottom: 8px; color: var(--text-primary); font-size: 0.9375rem;">Query Parameters</strong>
+                        <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.9375rem;">
+                            <li style="padding: 6px 0; border-bottom: 1px solid var(--border-color);">
+                                <code style="color: var(--primary-color);">phone</code> <span style="color: var(--text-secondary);">(required)</span> - Phone number to validate
+                </li>
+                            <li style="padding: 6px 0;">
+                                <code style="color: var(--primary-color);">country</code> <span style="color: var(--text-secondary);">(optional)</span> - Default country code (defaults to 'US')
+                </li>
+            </ul>
+                    </div>
+                    <div>
+                        <strong style="display: block; margin-bottom: 8px; color: var(--text-primary); font-size: 0.9375rem;">Response</strong>
+                        <div class="code-block" style="margin: 0; font-size: 0.875rem;">
+                            <code>{
+  "valid": true,
+  "number": "+12345678901",
+  "country": "US",
+  "type": "mobile"
+}</code>
                         </div>
-                        <p class="demo-hint">Enter a phone number in any format (e.g., +14155552671, 4155552671)</p>
                     </div>
-                    
-                    <div class="demo-output-container" id="demo-output-container" style="display: none;">
-                        <label class="demo-output-label">Response</label>
-                        <pre class="demo-output" id="demo-output"></pre>
+                </div>
+
+                <div class="integration-example">
+                    <div class="code-label">Example: Node.js</div>
+                    <div class="code-block">
+                        <code>const axios = require('axios');
+
+const response = await axios.get(
+  'https://phone-validation-api.vercel.app/api/validate',
+  {
+    params: { phone: '+1234567890', country: 'US' },
+    headers: { 'x-api-key': 'YOUR_API_KEY' }
+  }
+);
+
+console.log(response.data);</code>
                     </div>
-                    
-                    <div class="demo-loading" id="demo-loading" style="display: none;">
-                        <div class="loading"></div>
-                        <span>Validating phone number...</span>
+                </div>
+
+                <div class="integration-example">
+                    <div class="code-label">Example: cURL</div>
+                    <div class="code-block">
+                        <code>curl -X GET "https://phone-validation-api.vercel.app/api/validate?phone=+1234567890" \
+  -H "x-api-key: YOUR_API_KEY"</code>
                     </div>
-                    
-                    <div class="demo-error" id="demo-error" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Send Code Endpoint -->
+            <div style="margin: 0 auto 48px; max-width: 900px; background: var(--bg-white); border: 1px solid var(--border-color); border-radius: 16px; padding: 32px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
+                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+                    <span style="background: var(--success-color); color: white; padding: 6px 12px; border-radius: 6px; font-size: 0.875rem; font-weight: 600;">POST</span>
+                    <h3 style="margin: 0; font-size: 1.5rem;">/api/send-code</h3>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 24px;">Send a 6-digit verification code to a phone number via SMS. Perfect for two-factor authentication and account verification.</p>
+                
+                <div style="background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                    <div style="margin-bottom: 16px;">
+                        <strong style="display: block; margin-bottom: 8px; color: var(--text-primary); font-size: 0.9375rem;">Request Body</strong>
+                        <div class="code-block" style="margin: 0; font-size: 0.875rem;">
+                            <code>{
+  "phone": "+1234567890"
+}</code>
+                        </div>
+                    </div>
+                    <div>
+                        <strong style="display: block; margin-bottom: 8px; color: var(--text-primary); font-size: 0.9375rem;">Response</strong>
+                        <div class="code-block" style="margin: 0; font-size: 0.875rem;">
+                            <code>{
+  "success": true,
+  "message": "Verification code sent successfully",
+  "phone": "+12345678901",
+  "verification_sid": "VE..."
+}</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="integration-example">
+                    <div class="code-label">Example: Node.js</div>
+                    <div class="code-block">
+                        <code>const axios = require('axios');
+
+const response = await axios.post(
+  'https://phone-validation-api.vercel.app/api/send-code',
+  { phone: '+1234567890' },
+  { headers: { 'x-api-key': 'YOUR_API_KEY' } }
+);
+
+console.log(response.data);</code>
+                    </div>
+                </div>
+
+                <div class="integration-example">
+                    <div class="code-label">Example: cURL</div>
+                    <div class="code-block">
+                        <code>curl -X POST "https://phone-validation-api.vercel.app/api/send-code" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"phone": "+1234567890"}'</code>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Check Code Endpoint -->
+            <div style="margin: 0 auto 48px; max-width: 900px; background: var(--bg-white); border: 1px solid var(--border-color); border-radius: 16px; padding: 32px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
+                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+                    <span style="background: var(--success-color); color: white; padding: 6px 12px; border-radius: 6px; font-size: 0.875rem; font-weight: 600;">POST</span>
+                    <h3 style="margin: 0; font-size: 1.5rem;">/api/check-code</h3>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 24px;">Verify a 6-digit code sent to a phone number. Returns verification status instantly.</p>
+                
+                <div style="background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                    <div style="margin-bottom: 16px;">
+                        <strong style="display: block; margin-bottom: 8px; color: var(--text-primary); font-size: 0.9375rem;">Request Body</strong>
+                        <div class="code-block" style="margin: 0; font-size: 0.875rem;">
+                            <code>{
+  "phone": "+1234567890",
+  "code": "123456"
+}</code>
+                        </div>
+                    </div>
+                    <div>
+                        <strong style="display: block; margin-bottom: 8px; color: var(--text-primary); font-size: 0.9375rem;">Response (Success)</strong>
+                        <div class="code-block" style="margin: 0; font-size: 0.875rem;">
+                            <code>{
+  "success": true,
+  "verified": true,
+  "message": "Verification code is correct",
+  "phone": "+12345678901"
+}</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="integration-example">
+                    <div class="code-label">Example: Node.js</div>
+                    <div class="code-block">
+                        <code>const axios = require('axios');
+
+const response = await axios.post(
+  'https://phone-validation-api.vercel.app/api/check-code',
+  { phone: '+1234567890', code: '123456' },
+  { headers: { 'x-api-key': 'YOUR_API_KEY' } }
+);
+
+console.log(response.data);</code>
+                    </div>
+                </div>
+
+                <div class="integration-example">
+                    <div class="code-label">Example: cURL</div>
+                    <div class="code-block">
+                        <code>curl -X POST "https://phone-validation-api.vercel.app/api/check-code" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"phone": "+1234567890", "code": "123456"}'</code>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rate Limits & Error Codes -->
+            <div style="background: #f0f9ff; border-left: 4px solid var(--primary-color); padding: 24px; border-radius: 12px; margin: 48px auto 0; max-width: 900px;">
+                <h3 style="margin-bottom: 16px; font-size: 1.25rem; text-align: center;">Rate Limits & Error Codes</h3>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
+                    <div>
+                        <strong style="display: block; margin-bottom: 8px;">SMS Verification</strong>
+                        <ul style="list-style: none; padding: 0; margin: 0; color: var(--text-secondary); font-size: 0.9375rem;">
+                            <li>• 3 requests per phone/hour</li>
+                            <li>• 10 requests per API key/hour</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <strong style="display: block; margin-bottom: 8px;">Error Codes</strong>
+                        <ul style="list-style: none; padding: 0; margin: 0; color: var(--text-secondary); font-size: 0.9375rem;">
+                            <li>• <code>400</code> - Bad Request</li>
+                            <li>• <code>401</code> - Invalid API Key</li>
+                            <li>• <code>429</code> - Rate Limit Exceeded</li>
+                            <li>• <code>500</code> - Server Error</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Live Demos Section -->
+        <section class="section" id="demos" style="padding: 64px 0;">
+            <div style="text-align: center; margin-bottom: 48px;">
+                <h2 style="font-size: 2.5rem; margin-bottom: 16px;">Try It Live</h2>
+                <p style="color: var(--text-secondary); font-size: 1.125rem;">Test our API endpoints right here. No API key required for phone validation demo.</p>
+                </div>
+
+            <!-- Phone Validation Demo -->
+            <div style="margin-bottom: 64px; text-align: center;">
+                <h3 style="margin-bottom: 24px; font-size: 1.5rem;">Phone Validation</h3>
+                <div class="demo-container" style="margin: 0 auto;">
+                    <div class="demo-card">
+                        <div class="demo-input-group">
+                            <label for="test-phone-input">Phone Number</label>
+                            <div class="demo-input-wrapper">
+                                <input 
+                                    type="text" 
+                                    id="test-phone-input" 
+                                    placeholder="+14155552671 or 4155552671"
+                                    class="demo-input"
+                                />
+                                <button class="btn demo-btn" id="test-validate-btn" onclick="handleTestValidation()">
+                                    Validate
+                                </button>
+                </div>
+                            <p class="demo-hint">No API key required for this demo. Rate limited to 5 requests/minute.</p>
+                </div>
+                        
+                        <div class="demo-output-container" id="demo-output-container" style="display: none;">
+                            <label class="demo-output-label">Response</label>
+                            <pre class="demo-output" id="demo-output"></pre>
+                        </div>
+                        
+                        <div class="demo-loading" id="demo-loading" style="display: none;">
+                            <div class="loading"></div>
+                            <span>Validating phone number...</span>
+                        </div>
+                        
+                        <div class="demo-error" id="demo-error" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SMS Verification Demo -->
+            <div style="padding-top: 48px; border-top: 2px solid var(--border-color); text-align: center;">
+                <h3 style="margin-bottom: 24px; font-size: 1.5rem;">SMS Verification</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 32px; max-width: 700px; margin-left: auto; margin-right: auto;">Test SMS verification with your API key. <a href="#pricing" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">Get your free API key</a> to test with real SMS.</p>
+                
+                <div class="test-mode-badge" id="testModeBadge" style="display: none; text-align: center;">
+                    <span style="background: #fef3c7; color: #92400e; padding: 8px 16px; border-radius: 20px; font-size: 0.875rem; font-weight: 600; display: inline-block; margin-bottom: 24px;">
+                        🧪 Test Mode: No real SMS is sent
+                    </span>
+                </div>
+
+                <div class="demo-container" style="margin: 0 auto;">
+                    <div class="demo-card" style="max-width: 600px; margin: 0 auto;">
+                        <!-- API Key Input -->
+                        <div class="demo-input-group" style="margin-bottom: 32px; padding-bottom: 32px; border-bottom: 2px solid var(--border-color);">
+                            <label for="sms-api-key-input">API Key</label>
+                            <div class="demo-input-wrapper">
+                                <input 
+                                    type="text" 
+                                    id="sms-api-key-input" 
+                                    placeholder="pk_..."
+                                    class="demo-input"
+                                    style="font-family: 'SF Mono', 'Monaco', 'Menlo', monospace;"
+                                />
+                                <button class="btn btn-secondary" style="min-width: 100px;" onclick="saveApiKeyForDemo()">Save</button>
+                            </div>
+                            <p class="demo-hint">Enter your API key to test with real SMS. <a href="#pricing" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">Get your free API key</a></p>
+                            <div id="sms-api-key-status" style="margin-top: 12px; font-size: 0.875rem; display: none;"></div>
+                        </div>
+
+                        <!-- Step 1: Send Code -->
+                        <div id="sms-send-step">
+                            <h4 style="margin-bottom: 20px; font-size: 1.125rem; font-weight: 600;">Step 1: Send Verification Code</h4>
+                            <div class="demo-input-group">
+                                <label for="sms-phone-input">Phone Number</label>
+                                <div class="demo-input-wrapper">
+                                    <input 
+                                        type="text" 
+                                        id="sms-phone-input" 
+                                        placeholder="+1234567890"
+                                        class="demo-input"
+                                    />
+                                    <button class="btn demo-btn" id="sms-send-btn" onclick="handleSendSmsCode()">
+                                        Send Code
+                                    </button>
+                                </div>
+                                <p class="demo-hint">Enter phone number in E.164 format (e.g., +1234567890)</p>
+                            </div>
+                            
+                            <div class="demo-loading" id="sms-send-loading" style="display: none;">
+                                <div class="loading"></div>
+                                <span>Sending verification code...</span>
+                            </div>
+                            
+                            <div class="demo-error" id="sms-send-error" style="display: none;"></div>
+                            <div class="demo-success" id="sms-send-success" style="display: none;"></div>
+                        </div>
+
+                        <!-- Step 2: Verify Code -->
+                        <div id="sms-verify-step" style="display: none; margin-top: 32px; padding-top: 32px; border-top: 2px solid var(--border-color);">
+                            <h4 style="margin-bottom: 20px; font-size: 1.125rem; font-weight: 600;">Step 2: Verify Code</h4>
+                            <div class="demo-input-group">
+                                <label for="sms-code-input">Verification Code</label>
+                                <div class="demo-input-wrapper">
+                                    <input 
+                                        type="text" 
+                                        id="sms-code-input" 
+                                        placeholder="123456"
+                                        class="demo-input"
+                                        maxlength="6"
+                                        pattern="[0-9]{6}"
+                                    />
+                                    <button class="btn demo-btn" id="sms-verify-btn" onclick="handleVerifySmsCode()">
+                                        Verify
+                                    </button>
+                                </div>
+                                <p class="demo-hint">Enter the 6-digit code sent to your phone</p>
+                            </div>
+                            
+                            <div class="demo-loading" id="sms-verify-loading" style="display: none;">
+                                <div class="loading"></div>
+                                <span>Verifying code...</span>
+                            </div>
+                            
+                            <div class="demo-error" id="sms-verify-error" style="display: none;"></div>
+                            <div class="demo-success" id="sms-verify-success" style="display: none;"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- Pricing Section -->
-        <section class="section payment-section" id="pricing">
-            <h2>Choose Your Plan</h2>
-            <p>Start free with 7 requests, no credit card required. Upgrade anytime for more volume. Get your API key instantly via email.</p>
+        <section class="section payment-section" id="pricing" style="padding: 64px 0;">
+            <h2 style="text-align: center; margin-bottom: 16px; font-size: 2.5rem;">Simple, Transparent Pricing</h2>
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: 48px; font-size: 1.125rem;">Start free, scale as you grow. All plans include phone validation and SMS verification.</p>
             
             <div id="message" class="message"></div>
             
-            <div class="pricing-grid">
+            <div class="pricing-grid" style="margin: 0 auto;">
                 <div class="payment-card" id="plan-free">
                     <input type="radio" name="plan" value="free" class="plan-selector" id="radio-free">
                     <h3>Free</h3>
@@ -1309,8 +1701,9 @@
                         <span class="currency">$</span>0<span class="period">/month</span>
                     </div>
                     <ul class="payment-features">
-                        <li>7 requests</li>
+                        <li>7 API requests/month</li>
                         <li>Phone validation</li>
+                        <li>SMS verification (3 SMS/month)</li>
                         <li>Country detection</li>
                         <li>Number formatting</li>
                         <li>Perfect for testing</li>
@@ -1325,8 +1718,9 @@
                         <span class="currency">$</span>12<span class="period">/month</span>
                     </div>
                     <ul class="payment-features">
-                        <li>250 requests/month</li>
+                        <li>250 API requests/month</li>
                         <li>Phone validation</li>
+                        <li>SMS verification (50 SMS/month)</li>
                         <li>Country detection</li>
                         <li>Number formatting</li>
                         <li>Email support</li>
@@ -1341,8 +1735,9 @@
                         <span class="currency">$</span>60<span class="period">/month</span>
                     </div>
                     <ul class="payment-features">
-                        <li>2,500 requests/month</li>
+                        <li>2,500 API requests/month</li>
                         <li>Phone validation</li>
+                        <li>SMS verification (500 SMS/month)</li>
                         <li>Country detection</li>
                         <li>Number formatting</li>
                         <li>Priority support</li>
@@ -1358,7 +1753,8 @@
                         <span style="font-size: 1.5rem; color: var(--text-secondary);">Contact Us</span>
                     </div>
                     <ul class="payment-features">
-                        <li>5,000+ requests/month</li>
+                        <li>5,000+ API requests/month</li>
+                        <li>Unlimited SMS verification</li>
                         <li>All Pro features</li>
                         <li>Custom integration</li>
                         <li>Dedicated support</li>
@@ -1411,14 +1807,14 @@
                     <div class="modal-header">
                         <h3>Get Your Free API Key</h3>
                         <button class="modal-close" onclick="closeFreePlanModal()">&times;</button>
-                    </div>
+                </div>
                     <div class="modal-body">
                         <p style="color: var(--text-secondary); margin-bottom: 24px;">Enter your email address to get your free API key instantly. No payment required.</p>
                         <form id="freePlanForm" onsubmit="handleFreePlanSubmit(event)">
                             <div class="form-group">
                                 <label for="free-email">Email Address *</label>
                                 <input type="email" id="free-email" name="email" required placeholder="your@email.com" autocomplete="email">
-                            </div>
+            </div>
                             <div id="freePlanError" class="message error" style="display: none; margin-bottom: 20px;"></div>
                             <div id="freePlanLoading" style="display: none; text-align: center; padding: 20px;">
                                 <div class="loading"></div>
@@ -1436,13 +1832,13 @@
                     <div class="modal-header">
                         <h3 id="paidPlanTitle">Complete Payment</h3>
                         <button class="modal-close" onclick="closePaidPlanModal()">&times;</button>
-                    </div>
+                </div>
                     <div class="modal-body">
                         <form id="paidPlanForm" onsubmit="handlePaidPlanForm(event)">
                             <div class="form-group">
                                 <label for="paid-name">Full Name *</label>
                                 <input type="text" id="paid-name" name="name" required placeholder="John Doe" autocomplete="name">
-                            </div>
+            </div>
                             <div class="form-group">
                                 <label for="paid-email">Email Address *</label>
                                 <input type="email" id="paid-email" name="email" required placeholder="john@example.com" autocomplete="email">
@@ -1456,317 +1852,86 @@
             </div>
         </section>
 
-        <!-- Integration Examples -->
-        <section class="section">
-            <h2>Integration Examples</h2>
-            <p>Quick code snippets to get you started with our API.</p>
-
-            <h3>Node.js (using axios)</h3>
-            <div class="integration-example">
-                <div class="code-block">
-                    <code>const axios = require('axios');
-
-async function validatePhone(phoneNumber) {
-  try {
-    const response = await axios.get(
-      'https://phone-validation-api.vercel.app/api/validate',
-      {
-        params: {
-          phone: phoneNumber,
-          country: 'US'
-        },
-        headers: {
-          'x-api-key': 'YOUR_API_KEY'
-        }
-      }
-    );
-    
-    return response.data;
-    // {
-    //   valid: true,
-    //   number: "+12345678901",
-    //   country: "US",
-    //   type: "mobile"
-    // }
-  } catch (error) {
-    throw new Error(error.response?.data?.error || 'Validation failed');
-  }
-}
-
-validatePhone('+1234567890');</code>
-                </div>
-            </div>
-
-            <h3>cURL</h3>
-            <div class="integration-example">
-                <div class="code-block">
-                    <code>curl -X GET "https://phone-validation-api.vercel.app/api/validate?phone=+1234567890&country=US" \
-  -H "x-api-key: YOUR_API_KEY" \
-  -H "Content-Type: application/json"</code>
-                </div>
-            </div>
-
-            <h3>JavaScript (Fetch API)</h3>
-            <div class="integration-example">
-                <div class="code-block">
-                    <code>async function validatePhone(phoneNumber) {
-  try {
-    const response = await fetch(
-      `https://phone-validation-api.vercel.app/api/validate?phone=${encodeURIComponent(phoneNumber)}&country=US`,
-      {
-        method: 'GET',
-        headers: {
-          'x-api-key': 'YOUR_API_KEY',
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Validation failed');
-    }
-    
-    return await response.json();
-  } catch (error) {
-    throw new Error(error.message || 'Validation failed');
-  }
-}
-
-// Usage
-validatePhone('+1234567890')
-  .then(result => {
-    // {
-    //   valid: true,
-    //   number: "+12345678901",
-    //   country: "US",
-    //   type: "mobile"
-    // }
-  })
-  .catch(error => {
-    // Handle error
-  });</code>
-                </div>
-            </div>
-        </section>
-
-        <!-- SMS Verification API Hero Section -->
-        <section class="section sms-hero-section" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%); border: none; padding: 80px 56px;">
-            <div style="text-align: center; max-width: 800px; margin: 0 auto;">
-                <div style="font-size: 3rem; margin-bottom: 24px;">📱</div>
-                <h2 style="font-size: 3rem; margin-bottom: 24px; font-weight: 800; letter-spacing: -1px; line-height: 1.1;">SMS Verification API</h2>
-                <p class="subheadline" style="font-size: 1.375rem; color: var(--text-secondary); margin-bottom: 40px; line-height: 1.7;">Fast, secure, and developer-friendly phone number verification. Send 6-digit codes via SMS and verify them instantly.</p>
-                <button class="btn btn-hero" onclick="document.getElementById('sms-demo').scrollIntoView({behavior: 'smooth'});">Get Started</button>
-            </div>
-        </section>
-
-        <!-- SMS Verification Features -->
-        <section class="section">
-            <h2 style="text-align: center; margin-bottom: 48px;">Why Choose Our SMS Verification?</h2>
-            <div class="features-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; max-width: 1000px; margin: 0 auto;">
-                <div class="feature-card">
-                    <div class="feature-icon">📨</div>
-                    <h3>Send SMS Codes</h3>
-                    <p>Send 6-digit verification codes to any phone number worldwide. Powered by Twilio Verify for reliable delivery.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">✓</div>
-                    <h3>Verify Instantly</h3>
-                    <p>Verify phone numbers instantly with a simple API call. Get real-time verification results in milliseconds.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔌</div>
-                    <h3>Simple REST API</h3>
-                    <p>Easy integration with any language or framework. Clean JSON responses and comprehensive error handling.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- SMS Verification Demo -->
-        <section class="section" id="sms-demo">
-            <h2>Try It Live</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 32px;">Test our SMS verification API right here. <strong>Note:</strong> This demo requires an API key. <a href="#pricing" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">Get your free API key</a> to test with real SMS.</p>
+        <!-- Use Cases Section -->
+        <section class="section" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.03) 0%, rgba(139, 92, 246, 0.03) 100%); border-radius: 24px; margin: 64px 0; padding: 64px 32px;">
+            <h2 style="text-align: center; margin-bottom: 16px; font-size: 2.5rem;">Perfect For</h2>
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: 48px; font-size: 1.125rem;">Trusted by developers building modern applications</p>
             
-            <div class="test-mode-badge" id="testModeBadge" style="display: none;">
-                <span style="background: #fef3c7; color: #92400e; padding: 8px 16px; border-radius: 20px; font-size: 0.875rem; font-weight: 600; display: inline-block; margin-bottom: 24px;">
-                    🧪 Test Mode: No real SMS is sent
-                </span>
-            </div>
-
-            <div class="demo-container">
-                <div class="demo-card" style="max-width: 600px; margin: 0 auto;">
-                    <!-- API Key Input -->
-                    <div class="demo-input-group" style="margin-bottom: 32px; padding-bottom: 32px; border-bottom: 2px solid var(--border-color);">
-                        <label for="sms-api-key-input">API Key</label>
-                        <div class="demo-input-wrapper">
-                            <input 
-                                type="text" 
-                                id="sms-api-key-input" 
-                                placeholder="pk_..."
-                                class="demo-input"
-                                style="font-family: 'SF Mono', 'Monaco', 'Menlo', monospace;"
-                            />
-                            <button class="btn btn-secondary" style="min-width: 100px;" onclick="saveApiKeyForDemo()">Save</button>
-                        </div>
-                        <p class="demo-hint">Enter your API key to test with real SMS. <a href="#pricing" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">Get your free API key</a></p>
-                        <div id="sms-api-key-status" style="margin-top: 12px; font-size: 0.875rem; display: none;"></div>
-                    </div>
-
-                    <!-- Step 1: Send Code -->
-                    <div id="sms-send-step">
-                        <h3 style="margin-bottom: 20px; font-size: 1.25rem;">Step 1: Send Verification Code</h3>
-                        <div class="demo-input-group">
-                            <label for="sms-phone-input">Phone Number</label>
-                            <div class="demo-input-wrapper">
-                                <input 
-                                    type="text" 
-                                    id="sms-phone-input" 
-                                    placeholder="+1234567890"
-                                    class="demo-input"
-                                />
-                                <button class="btn demo-btn" id="sms-send-btn" onclick="handleSendSmsCode()">
-                                    Send Code
-                                </button>
-                            </div>
-                            <p class="demo-hint">Enter phone number in E.164 format (e.g., +1234567890)</p>
-                        </div>
-                        
-                        <div class="demo-loading" id="sms-send-loading" style="display: none;">
-                            <div class="loading"></div>
-                            <span>Sending verification code...</span>
-                        </div>
-                        
-                        <div class="demo-error" id="sms-send-error" style="display: none;"></div>
-                        <div class="demo-success" id="sms-send-success" style="display: none;"></div>
-                    </div>
-
-                    <!-- Step 2: Verify Code -->
-                    <div id="sms-verify-step" style="display: none; margin-top: 32px; padding-top: 32px; border-top: 2px solid var(--border-color);">
-                        <h3 style="margin-bottom: 20px; font-size: 1.25rem;">Step 2: Verify Code</h3>
-                        <div class="demo-input-group">
-                            <label for="sms-code-input">Verification Code</label>
-                            <div class="demo-input-wrapper">
-                                <input 
-                                    type="text" 
-                                    id="sms-code-input" 
-                                    placeholder="123456"
-                                    class="demo-input"
-                                    maxlength="6"
-                                    pattern="[0-9]{6}"
-                                />
-                                <button class="btn demo-btn" id="sms-verify-btn" onclick="handleVerifySmsCode()">
-                                    Verify
-                                </button>
-                            </div>
-                            <p class="demo-hint">Enter the 6-digit code sent to your phone</p>
-                        </div>
-                        
-                        <div class="demo-loading" id="sms-verify-loading" style="display: none;">
-                            <div class="loading"></div>
-                            <span>Verifying code...</span>
-                        </div>
-                        
-                        <div class="demo-error" id="sms-verify-error" style="display: none;"></div>
-                        <div class="demo-success" id="sms-verify-success" style="display: none;"></div>
-                    </div>
+            <div class="features-grid" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <h3>Two-Factor Authentication</h3>
+                    <p>Add SMS-based 2FA to your applications. Secure user accounts with phone number verification.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📝</div>
+                    <h3>Form Validation</h3>
+                    <p>Validate phone numbers in real-time as users type. Improve data quality and user experience.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👤</div>
+                    <h3>Account Verification</h3>
+                    <p>Verify user phone numbers during signup. Reduce fake accounts and improve security.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🛒</div>
+                    <h3>E-commerce</h3>
+                    <p>Validate shipping addresses and send order confirmations via SMS. Improve customer trust.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💬</div>
+                    <h3>Messaging Apps</h3>
+                    <p>Verify phone numbers before allowing users to send messages. Prevent spam and abuse.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏢</div>
+                    <h3>Enterprise Solutions</h3>
+                    <p>Integrate phone validation into your CRM, ERP, or custom business applications.</p>
                 </div>
             </div>
         </section>
 
-        <!-- SMS Verification API Documentation -->
-        <section class="section">
-            <h2>API Documentation</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 32px;">Simple REST API endpoints for sending and verifying SMS codes.</p>
-
-            <h3>Send Verification Code</h3>
-            <p style="color: var(--text-secondary); margin-bottom: 20px;">Send a 6-digit verification code to any phone number via SMS.</p>
-            <div class="integration-example">
-                <div class="code-label">POST /api/send-code</div>
-                <div class="code-block">
-                    <code>const axios = require('axios');
-
-async function sendVerificationCode(phoneNumber) {
-  try {
-    const response = await axios.post(
-      'https://phone-validation-api.vercel.app/api/send-code',
-      { phone: phoneNumber },
-      {
-        headers: {
-          'x-api-key': 'YOUR_API_KEY',
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    return response.data;
-  } catch (error) {
-    throw new Error(error.response?.data?.error || 'Failed to send code');
-  }
-}</code>
-                </div>
-            </div>
-
-            <h3>Verify Code</h3>
-            <p style="color: var(--text-secondary); margin-bottom: 20px;">Verify the 6-digit code sent to the phone number.</p>
-            <div class="integration-example">
-                <div class="code-label">POST /api/check-code</div>
-                <div class="code-block">
-                    <code>const axios = require('axios');
-
-async function verifyCode(phoneNumber, code) {
-  try {
-    const response = await axios.post(
-      'https://phone-validation-api.vercel.app/api/check-code',
-      { phone: phoneNumber, code: code },
-      {
-        headers: {
-          'x-api-key': 'YOUR_API_KEY',
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    return response.data;
-  } catch (error) {
-    throw new Error(error.response?.data?.error || 'Verification failed');
-  }
-}</code>
-                </div>
-            </div>
-
-            <h3>cURL Examples</h3>
-            <div class="integration-example">
-                <div class="code-label">Send Code</div>
-                <div class="code-block">
-                    <code>curl -X POST "https://phone-validation-api.vercel.app/api/send-code" \
-  -H "x-api-key: YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"phone": "+1234567890"}'</code>
-                </div>
-            </div>
-
-            <div class="integration-example">
-                <div class="code-label">Verify Code</div>
-                <div class="code-block">
-                    <code>curl -X POST "https://phone-validation-api.vercel.app/api/check-code" \
-  -H "x-api-key: YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"phone": "+1234567890", "code": "123456"}'</code>
-                </div>
-            </div>
-
-            <div class="info-box" style="margin-top: 32px; padding: 20px; background: #f0f9ff; border-left: 4px solid var(--primary-color); border-radius: 8px;">
-                <strong>Rate Limits:</strong>
-                <ul style="margin-top: 12px; margin-left: 20px; color: var(--text-secondary);">
-                    <li>Maximum 3 SMS requests per phone number per hour</li>
-                    <li>Maximum 10 SMS requests per API key per hour</li>
-                    <li>Rate limit exceeded returns HTTP 429 status</li>
-                </ul>
-            </div>
-        </section>
     </main>
 
-    <footer>
+    <!-- Floating CTA Button -->
+    <div class="floating-cta" id="floatingCta">
+        <button onclick="handleFreePlanSignup()" style="display: flex; align-items: center; gap: 8px;">
+            <span>🚀</span>
+            <span>Get Free API Key</span>
+        </button>
+    </div>
+
+    <footer style="background: #1a1a1a; color: #ffffff; padding: 48px 32px 32px; margin-top: 80px;">
         <div class="container">
-            <p>&copy; 2025 Phone Validation API. All rights reserved.</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 48px; margin-bottom: 48px;">
+                <div>
+                    <h3 style="color: white; margin-bottom: 16px; font-size: 1.125rem;">Product</h3>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="margin-bottom: 12px;"><a href="#documentation" style="color: rgba(255, 255, 255, 0.7); text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)'">Documentation</a></li>
+                        <li style="margin-bottom: 12px;"><a href="#demos" style="color: rgba(255, 255, 255, 0.7); text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)'">Live Demos</a></li>
+                        <li style="margin-bottom: 12px;"><a href="#pricing" style="color: rgba(255, 255, 255, 0.7); text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)'">Pricing</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color: white; margin-bottom: 16px; font-size: 1.125rem;">Resources</h3>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="margin-bottom: 12px;"><a href="https://github.com" target="_blank" style="color: rgba(255, 255, 255, 0.7); text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)'">GitHub</a></li>
+                        <li style="margin-bottom: 12px;"><a href="mailto:nemanja.stojic007@gmail.com" style="color: rgba(255, 255, 255, 0.7); text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)'">Support</a></li>
+                        <li style="margin-bottom: 12px;"><a href="mailto:nemanja.stojic007@gmail.com?subject=Custom Plan Inquiry" style="color: rgba(255, 255, 255, 0.7); text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)'">Contact Sales</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color: white; margin-bottom: 16px; font-size: 1.125rem;">Company</h3>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="margin-bottom: 12px;"><a href="#" style="color: rgba(255, 255, 255, 0.7); text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)'">About</a></li>
+                        <li style="margin-bottom: 12px;"><a href="#" style="color: rgba(255, 255, 255, 0.7); text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)'">Privacy Policy</a></li>
+                        <li style="margin-bottom: 12px;"><a href="#" style="color: rgba(255, 255, 255, 0.7); text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255, 255, 255, 0.7)'">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div style="border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 32px; text-align: center;">
+                <p style="color: rgba(255, 255, 255, 0.6); margin: 0;">&copy; 2025 Phone Validation API. All rights reserved.</p>
+            </div>
         </div>
     </footer>
 
@@ -2656,6 +2821,37 @@ async function verifyCode(phoneNumber, code) {
             } else if (urlParams.get('payment') === 'cancelled') {
                 showMessage('Payment was cancelled. You can try again anytime.', 'error');
             }
+
+            // Floating CTA button
+            const floatingCta = document.getElementById('floatingCta');
+            const header = document.querySelector('header');
+            const headerHeight = header ? header.offsetHeight : 400;
+
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > headerHeight) {
+                    floatingCta.classList.add('show');
+                } else {
+                    floatingCta.classList.remove('show');
+                }
+            });
+
+            // Scroll animations for sections
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.section').forEach(section => {
+                observer.observe(section);
+            });
         });
     </script>
 </body>
